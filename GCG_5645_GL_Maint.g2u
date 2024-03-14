@@ -1,0 +1,333 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Caption("GL Account Maintenance")
+Gui.Form..Size(5055,11850)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.frame1.Create(Frame)
+Gui.Form.frame1.Size(4695,1515)
+Gui.Form.frame1.Position(60,45)
+Gui.Form.lbl1.Create(Label,"Commission's Accrual ",True,2205,255,0,60,210,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl1.Parent("frame1")
+Gui.Form.txt_AC_GL.Create(TextBox,"",True,2235,300,0,60,450,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txt_AC_GL.Parent("frame1")
+Gui.Form.txt_AC_GL.MaxLength(15)
+Gui.Form.lbl2.Create(Label,"Accounts Payable Account",True,1935,255,0,60,885,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl2.Parent("frame1")
+Gui.Form.txt_AP_GL.Create(TextBox,"",True,2235,300,0,60,1140,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txt_AP_GL.Parent("frame1")
+Gui.Form.txt_AP_GL.MaxLength(15)
+Gui.Form.cmdSave.Create(Button)
+Gui.Form.cmdSave.Size(855,375)
+Gui.Form.cmdSave.Position(3765,1050)
+Gui.Form.cmdSave.Parent("frame1")
+Gui.Form.cmdSave.Caption("Save")
+Gui.Form.cmdSave.Event(Click,cmdSave_Click)
+Gui.Form.cmd_AC_GL.Create(Button)
+Gui.Form.cmd_AC_GL.Size(450,375)
+Gui.Form.cmd_AC_GL.Position(2370,405)
+Gui.Form.cmd_AC_GL.Parent("frame1")
+Gui.Form.cmd_AC_GL.Caption("^")
+Gui.Form.cmd_AC_GL.Event(Click,cmd_AC_GL_Click)
+Gui.Form.cmd_AP_GL.Create(Button)
+Gui.Form.cmd_AP_GL.Size(450,375)
+Gui.Form.cmd_AP_GL.Position(2400,1080)
+Gui.Form.cmd_AP_GL.Parent("frame1")
+Gui.Form.cmd_AP_GL.Caption("^")
+Gui.Form.cmd_AP_GL.Event(Click,cmd_AP_GL_Click)
+Gui.Form.GsGcDisplay.Create(GsGridControl)
+Gui.Form.GsGcDisplay.Size(4680,9120)
+Gui.Form.GsGcDisplay.Position(60,1605)
+Gui.Form.cmdUpload.Create(Button)
+Gui.Form.cmdUpload.Size(855,375)
+Gui.Form.cmdUpload.Position(3885,10785)
+Gui.Form.cmdUpload.Caption("Upload")
+Gui.Form.cmdUpload.Event(Click,cmdUpload_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: Alejandro Anazco V.
+'11/7/2019
+'Programmed for EMC
+'Purpose: Maintain GL Acccount for the Commission's Module.
+
+f.Intrinsic.Control.Try
+'Try something
+	f.Intrinsic.Control.CallSub(createDisplayDT)
+	f.Intrinsic.Control.CallSub(loadGridProperties)
+	f.Intrinsic.Control.CallSub(loadDisplayData)
+	gui.Form..Show
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_5645_GL_Maint.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.createDisplayDT.Start
+f.Intrinsic.Control.Try
+	'Creates standard Display DT
+	f.Data.DataTable.Create("displayDT", true)
+	f.Data.DataTable.AddColumn("displayDT", "product_Line", "String", "  ", 2)
+	f.Data.DataTable.AddColumn("displayDT", "glAccount", "String", "", 15)
+	'Creates standard GridView
+	f.Data.DataView.Create("displayDT", "displayDV", 22)
+	gui.Form.GsGcDisplay.AddGridviewFromDataview("displayGV", "displayDT", "displayDV")
+	gui.Form.GsGcDisplay.MainView("displayGV")
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.createDisplayDT.End
+
+Program.Sub.loadGridProperties.Start
+v.Local.iCnt.Declare
+v.Local.sFields.Declare
+f.Intrinsic.Control.Try
+	'Create Standard Grid Properties.
+	f.Intrinsic.String.Split(v.DataTable.displayDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", False)
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", True)
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Near")
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.Form.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	gui.Form.GsGcDisplay.SetColumnProperty("displayGV", "product_Line", "Caption", "Product Line")
+	gui.Form.GsGcDisplay.SetColumnProperty("displayGV", "glAccount", "Caption", "GL Account")
+	
+	'gui.Form.GsGcDisplay.SetColumnProperty("displayGV", "Default", "ReadOnly", False)
+	'gui.Form.GsGcDisplay.SetColumnProperty("displayGV", "Default", "AllowEdit", True)
+	'gui.Form.GsGcDisplay.SetColumnProperty("displayGV", "Default", "HeaderHAlignment", "Center")
+	'gui.Form.GsGcDisplay.SetColumnProperty("displayGV", "Default", "CellHAlignment", "Center")
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadGridProperties.End
+
+Program.Sub.loadDisplayData.Start
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+	'Loads Data to display DT.
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Data.DataTable.CreateFromSQL("tmpDisplayDT", "con", "Select A.Product_line as product_Line, B.glAccount from V_PRODUCT_LINE A Left Join GCG_5645_GL_ACCNTS B on A.Product_line = B.product_Line;")
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'ACGL'", v.Local.sRet)
+	 	gui.Form.txt_AC_GL.Text(v.Local.sRet)
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'APGL'", v.Local.sRet)
+	 	gui.Form.txt_AP_GL.Text(v.Local.sRet)
+	f.ODBC.Connection!con.Close
+	
+	f.Data.DataTable.DeleteRow("displayDT")
+	f.Data.DataTable.AcceptChanges("displayDT")
+	f.Data.DataTable.Merge("tmpDisplayDT", "displayDT", false, 2)
+	f.Data.DataTable.Close("tmpDisplayDT")
+f.Intrinsic.Control.Catch	
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadDisplayData.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.Try
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.cmd_AC_GL_Click.Start
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+	'Browser for GL Account: Accrual GL
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.UI.Browser("GL Account", "con", "Select GL_ACCOUNT, DESCR", "GL Account*!*Description", "60*!*120", v.Local.sRet)
+	 	f.Intrinsic.Control.If(v.Local.sRet, <>, "***CANCEL***")
+	 		f.Intrinsic.String.Split(v.Local.sRet, "*!*", v.Local.sRet)
+	 		gui.Form.txt_AC_GL.Text( v.Local.sRet(0).Trim)
+	 	f.Intrinsic.Control.EndIf
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_AC_GL_Click.End
+
+Program.Sub.cmd_AP_GL_Click.Start
+v.Local.sRet.Declare
+f.Intrinsic.Control.Try
+	'Browser for GL Account: AP GL
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.UI.Browser("GL Account", "con", "Select GL_ACCOUNT, DESCR", "GL Account*!*Description", "60*!*120", v.Local.sRet)
+	 	f.Intrinsic.Control.If(v.Local.sRet, <>, "***CANCEL***")
+	 		f.Intrinsic.String.Split(v.Local.sRet, "*!*", v.Local.sRet)
+	 		gui.Form.txt_AP_GL.Text( v.Local.sRet(0).Trim)
+	 	f.Intrinsic.Control.EndIf
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_AP_GL_Click.End
+
+Program.Sub.cmdSave_Click.Start
+v.Local.sAC_GL.Declare
+v.Local.sAP_GL.Declare
+f.Intrinsic.Control.Try
+Function.Intrinsic.Debug.InvokeDebugger
+Function.Intrinsic.Debug.Stop
+
+	'Get GL accounts for Comm Accrual and 
+	v.Local.sAC_GL.Set(v.Screen.Form!txt_AC_GL.Text)
+	v.Local.sAP_GL.Set(v.Screen.Form!txt_AP_GL.Text)
+
+	f.Intrinsic.String.Trim(v.Local.sAC_GL, v.Local.sAC_GL)
+	f.Intrinsic.String.Trim(v.Local.sAP_GL, v.Local.sAP_GL)
+	'Accepts changes to display DT and gets a Save DT.
+	f.Data.DataTable.AcceptChanges("displayDT")
+	f.Data.DataView.ToDataTable("displayDT", "displayDV", "saveDT")
+	'Adding extra column to match Database.
+	f.Data.DataTable.AddColumn("saveDT", "systemGL", "String", "PLGL", 4)
+	'Adding lines to account for Accrual and AP.
+	f.Data.DataTable.AddRow("saveDT", "glAccount", v.Local.sAC_GL, "systemGL", "ACGL")
+	f.Data.DataTable.AddRow("saveDT", "glAccount", v.Local.sAP_GL, "systemGL", "APGL")
+'	f.Data.DataTable.AddRow("saveDT", "product_Line", "99", "glAccount", v.Local.sAC_GL, "systemGL", "ACGL")
+'	f.Data.DataTable.AddRow("saveDT", "product_Line", "98", "glAccount", v.Local.sAP_GL, "systemGL", "APGL")
+	'Adding extra column to match Database.
+	f.Data.DataTable.AddColumn("saveDT", "GSS_USER", "String", v.Caller.User, 9)
+	f.Data.DataTable.AddColumn("saveDT", "Last_Save", "String", v.Ambient.Date.PSQLFriendly, 10)
+	'Accept Changes to Save DT
+	f.Data.DataTable.AcceptChanges("saveDT")
+	'Save to DB
+	Function.Intrinsic.Debug.Stop
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Data.DataTable.SaveToDB("saveDT", "con", "GCG_5645_GL_ACCNTS", "product_Line*!*glAccount", 256, "product_Line@!@product_Line*!*glAccount@!@glAccount*!*systemGL@!@systemGL*!*GSS_USER@!@GSS_USER*!*Last_Save@!@Last_Save")
+	 	'f.Data.DataTable.SaveToDB("saveDT", "con", "GCG_5645_GL_ACCNTS", "product_Line", 256)
+	f.ODBC.Connection!con.Close
+	'Close tmp SaveDT.
+	f.Data.DataTable.Close("saveDT")
+	'Reload Data for Display
+	f.Intrinsic.Control.CallSub("loadDisplayData")
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+'	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+'		f.ODBC.Connection!con.Close
+'	f.Intrinsic.Control.EndIf 
+'	
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.cmdUpload_Click.Start
+'File Varialbles.
+v.Local.sFilePath.Declare
+v.Local.sExtension.Declare
+v.Local.bExist.Declare
+
+v.Local.sData.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.UI.ShowOpenFileDialog("", "XLXS|*.xlsx|XLS|*.xls|CSV|*.csv", v.Local.sFilePath)
+	f.Intrinsic.Control.If(v.Local.sFilePath.Trim, <>, "***CANCEL***")
+		f.Intrinsic.File.GetExtensionComponent(v.Local.sFilePath, v.Local.sExtension)
+		f.Intrinsic.File.Exists(v.Local.sFilePath, v.Local.bExits)
+		f.Intrinsic.Control.If(v.Local.bExits.Not)
+			f.Intrinsic.Control.ExitSub
+		f.Intrinsic.Control.EndIf
+		f.Automation.MSExcel.CheckPresence(v.Local.bExits)
+		
+		f.Intrinsic.Control.If(v.Local.sExtension.UCase, =, ".CSV")
+			f.Data.DataTable.CreateFromCSV("uploadtDT", v.Local.sFilePath, "product_Line*!*glAccount", "String*!*String", true)
+		f.Intrinsic.Control.Else
+			f.Intrinsic.Control.If(v.Local.bExits)
+				f.Automation.MSExcel.ReadSpreadsheet(v.Local.sFilePath, v.Local.sData)
+				f.Data.DataTable.CreateFromString("uploadtDT", v.Local.sData, "product_Line*!*glAccount", "String*!*String", "*!*", "$!$", true)
+			f.Intrinsic.Control.Else
+				f.Data.DataTable.CreateFromCSV("uploadtDT", v.Local.sFilePath, "product_Line*!*glAccount", "String*!*String", true)
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Else
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	
+	'Adding extra column to match Database.
+	f.Data.DataTable.AddColumn("uploadtDT", "systemGL", "String", "PLGL", 4)
+	f.Data.DataTable.AddColumn("uploadtDT", "GSS_USER", "String", v.Caller.User, 9)
+	f.Data.DataTable.AddColumn("uploadtDT", "Last_Save", "String", v.Ambient.Date.PSQLFriendly, 10)
+	'Accept Changes to Save DT
+	f.Data.DataTable.AcceptChanges("uploadtDT")
+	'Save to DB
+	Function.Intrinsic.Debug.Stop
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Data.DataTable.SaveToDB("uploadtDT", "con", "GCG_5645_GL_ACCNTS", "product_Line*!*systemGL", "product_Line@!@product_Line*!*glAccount@!@glAccount*!*systemGL@!@systemGL*!*GSS_USER@!@GSS_USER*!*Last_Save@!@Last_Save")
+	f.ODBC.Connection!con.Close
+	'Close tmp SaveDT.
+	f.Data.DataTable.Close("uploadtDT")
+	'Reload Data for Display
+	f.Intrinsic.Control.CallSub("loadDisplayData")
+f.Intrinsic.Control.Catch
+	'Closes ODBC connection, default to connection : "con"
+	f.Intrinsic.Control.If(v.ODBC.con.State, =, 1)
+		f.ODBC.Connection!con.Close
+	f.Intrinsic.Control.EndIf 
+	
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdUpload_Click.End
+
+
+
+
+
+
+
+
+
+
+
+
