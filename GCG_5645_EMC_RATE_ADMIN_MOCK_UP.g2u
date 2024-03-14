@@ -1,0 +1,563 @@
+Program.Sub.ScreenSU.Start
+Gui.F_Commissions_Rates..Create
+Gui.F_Commissions_Rates..Size(18330,11115)
+Gui.F_Commissions_Rates..MinX(0)
+Gui.F_Commissions_Rates..MinY(0)
+Gui.F_Commissions_Rates..Position(0,0)
+Gui.F_Commissions_Rates..BackColor(-2147483633)
+Gui.F_Commissions_Rates..MousePointer(0)
+Gui.F_Commissions_Rates..Caption("Commission Rate Maintenance")
+Gui.F_Commissions_Rates..Event(UnLoad,F_Commissions_Rates_UnLoad)
+Gui.F_Commissions_Rates.frmSalesmen.Create(Frame)
+Gui.F_Commissions_Rates.frmSalesmen.Size(5745,9915)
+Gui.F_Commissions_Rates.frmSalesmen.Position(30,30)
+Gui.F_Commissions_Rates.frmSalesmen.Anchor(7)
+Gui.F_Commissions_Rates.frmSalesmen.Caption("Salesperson Default Rate")
+Gui.F_Commissions_Rates.GsGcSalesmen.Create(GsGridControl)
+Gui.F_Commissions_Rates.GsGcSalesmen.Size(5655,9030)
+Gui.F_Commissions_Rates.GsGcSalesmen.Position(30,720)
+Gui.F_Commissions_Rates.GsGcSalesmen.Parent("frmSalesmen")
+Gui.F_Commissions_Rates.GsGcSalesmen.Anchor(7)
+Gui.F_Commissions_Rates.GsGcSalesmen.Event(RowCellClick,GsGcSalesmen_RowCellClick)
+Gui.F_Commissions_Rates.lbl1.Create(Label,"Default Rate:",True,1065,255,0,90,375,True,0,"Arial",8,-2147483633,0)
+Gui.F_Commissions_Rates.lbl1.Parent("frmSalesmen")
+Gui.F_Commissions_Rates.txtDefaultRate.Create(TextBox,"",True,825,300,0,1200,300,True,1,"Arial",8,-2147483643,1)
+Gui.F_Commissions_Rates.txtDefaultRate.Parent("frmSalesmen")
+Gui.F_Commissions_Rates.txtDefaultRate.NumericOnly(1)
+Gui.F_Commissions_Rates.txtDefaultRate.Mask("0.00%")
+Gui.F_Commissions_Rates.tabRates.Create(Tab)
+Gui.F_Commissions_Rates.tabRates.Size(12225,9870)
+Gui.F_Commissions_Rates.tabRates.Position(5835,45)
+Gui.F_Commissions_Rates.tabRates.Anchor(15)
+Gui.F_Commissions_Rates.tabRates.Tabs(2)
+Gui.F_Commissions_Rates.tabRates.SetTab(0)
+Gui.F_Commissions_Rates.tabRates.Caption("Warehouse Location Rates")
+Gui.F_Commissions_Rates.tabRates.SetTab(1)
+Gui.F_Commissions_Rates.tabRates.Caption("Customer/Sales Rep Rates")
+Gui.F_Commissions_Rates.GsGcWarehouse.Create(GsGridControl)
+Gui.F_Commissions_Rates.GsGcWarehouse.Size(12015,9315)
+Gui.F_Commissions_Rates.GsGcWarehouse.Position(30,90)
+Gui.F_Commissions_Rates.GsGcWarehouse.Parent("tabRates",0)
+Gui.F_Commissions_Rates.GsGcWarehouse.Anchor(15)
+Gui.F_Commissions_Rates.GsGcWarehouse.Event(RowCellClick,GsGcWarehouse_RowCellClick)
+Gui.F_Commissions_Rates.GsGcCustomer.Create(GsGridControl)
+Gui.F_Commissions_Rates.GsGcCustomer.Size(11985,9240)
+Gui.F_Commissions_Rates.GsGcCustomer.Position(30,120)
+Gui.F_Commissions_Rates.GsGcCustomer.Parent("tabRates",1)
+Gui.F_Commissions_Rates.GsGcCustomer.Anchor(15)
+Gui.F_Commissions_Rates.GsGcCustomer.Event(RowCellClick,GsGcCustomer_RowCellClick)
+Gui.F_Commissions_Rates.cmdSave.Create(Button)
+Gui.F_Commissions_Rates.cmdSave.Size(855,375)
+Gui.F_Commissions_Rates.cmdSave.Position(17130,9975)
+Gui.F_Commissions_Rates.cmdSave.Caption("Save")
+Gui.F_Commissions_Rates.cmdSave.Anchor(10)
+Gui.F_Commissions_Rates.cmdSave.Event(Click,cmdSave_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+f.Intrinsic.Control.Try
+
+	f.Intrinsic.Control.CallSub(createDisplayDT)
+	f.Intrinsic.Control.CallSub(loadGridProperties)
+	f.Intrinsic.Control.CallSub(addRawData)
+	f.Intrinsic.Control.CallSub(contextMenu)
+	gui.F_Commissions_Rates..Show
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Closes ODBC connection, default to connection : "con"
+f.Intrinsic.Control.If(v.ODBC!con.State, =, 1)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.EndIf
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project EMC_RATE_ADMIN_MOCK_UP.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+'f.Intrinsic.Control.CallSub(createDisplayDT)
+Program.Sub.createDisplayDT.Start
+f.Intrinsic.Control.Try
+	f.Data.DataTable.Create("salespeopleDT", true)
+	f.Data.DataTable.AddColumn("salespeopleDT", "SP_ID", "String", "", 3)
+	f.Data.DataTable.AddColumn("salespeopleDT", "salespersonName", "String")
+	f.Data.DataTable.AddColumn("salespeopleDT", "SP_USER", "String")
+	f.Data.DataTable.AddColumn("salespeopleDT", "SP_RATE", "Float")
+	f.Data.DataTable.AddColumn("salespeopleDT", "SP_VENDOR", "String", "", 6)
+	
+	f.Data.DataView.Create("salespeopleDT", "salespeopleDV", 22)
+	gui.F_Commissions_Rates.GsGcSalesmen.AddGridviewFromDataview("salespeopleGV", "salespeopleDT", "salespeopleDV")
+	gui.F_Commissions_Rates.GsGcSalesmen.MainView("salespeopleGV")
+	
+	f.Data.DataTable.Create("warehouseDT", true)
+	f.Data.DataTable.AddColumn("warehouseDT", "locationID", "String")
+	f.Data.DataTable.AddColumn("warehouseDT", "locationName", "String")
+	f.Data.DataTable.AddColumn("warehouseDT", "agencyID", "String")
+	f.Data.DataTable.AddColumn("warehouseDT", "agencyName", "String")
+	f.Data.DataTable.AddColumn("warehouseDT", "warehouseRate", "Float")
+	
+	f.Data.DataView.Create("warehouseDT", "warehouseDV", 22)
+	gui.F_Commissions_Rates.GsGcWarehouse.AddGridviewFromDataview("warehouseGV", "warehouseDT", "warehouseDV")
+	gui.F_Commissions_Rates.GsGcWarehouse.MainView("warehouseGV")
+	
+	f.Data.DataTable.Create("custRateDT", true)
+	f.Data.DataTable.AddColumn("custRateDT", "CUST_ID", "String")
+	f.Data.DataTable.AddColumn("custRateDT", "customerName", "String")
+	f.Data.DataTable.AddColumn("custRateDT", "CUST_SP_ID", "String")
+	f.Data.DataTable.AddColumn("custRateDT", "customer_salespersonName", "String")
+	f.Data.DataTable.AddColumn("custRateDT", "CUST_RATE", "Float")
+	
+	f.Data.DataView.Create("custRateDT", "custRateDV", 22)
+	gui.F_Commissions_Rates.GsGcCustomer.AddGridviewFromDataview("custRateGV", "custRateDT", "custRateDV")
+	gui.F_Commissions_Rates.GsGcCustomer.MainView("custRateGV")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.createDisplayDT.End
+
+Program.Sub.loadGridProperties.Start
+v.Local.iCnt.Declare
+v.Local.sFields.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.String.Split(v.DataTable.salespeopleDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Center")
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_USER", "Visible", False)
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_RATE", "ReadOnly", False)
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_RATE", "AllowEdit", True)
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_VENDOR", "ReadOnly", False)
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_VENDOR", "AllowEdit", True)
+'	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "Default", "HeaderHAlignment", "Center")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_ID", "CellHAlignment", "Center")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_RATE", "CellHAlignment", "Far")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_ID", "Caption", "SP Code")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "salespersonName", "Caption", "SP Name")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_USER", "Caption", "SP User")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_RATE", "Caption", "SP Rate")
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_VENDOR", "Caption", "SP Vendor")	
+	gui.F_Commissions_Rates.GsGcSalesmen.SetColumnProperty("salespeopleGV", "SP_RATE", "DisplayCustomNumeric", "##0.00%")
+
+	f.Intrinsic.String.Split(v.DataTable.warehouseDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Center")
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "warehouseRate", "ReadOnly", False)
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "warehouseRate", "AllowEdit", True)
+'	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "Default", "HeaderHAlignment", "Center")
+'	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "Default", "CellHAlignment", "Center")
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "agencyID", "CellHAlignment", "Center")
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "warehouseRate", "CellHAlignment", "Far")
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "locationID", "Caption", "WH Code")
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "locationName", "Caption", "WH Name")
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "agencyID", "Caption", "Agency ID")	
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "agencyName", "Caption", "Agency Name")	
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "warehouseRate", "Caption", "WH Rate")	
+	gui.F_Commissions_Rates.GsGcWarehouse.SetColumnProperty("warehouseGV", "warehouseRate", "DisplayCustomNumeric", "##0.00%")
+	
+	f.Intrinsic.String.Split(v.DataTable.custRateDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Center")
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_RATE", "ReadOnly", False)
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_RATE", "AllowEdit", True)
+'	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "Default", "HeaderHAlignment", "Center")
+'	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "Default", "CellHAlignment", "Center")
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_SP_ID", "CellHAlignment", "Center")
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_RATE", "CellHAlignment", "Far")
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_ID", "Caption", "Cust ID")
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "customerName", "Caption", "Cust Name")
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_SP_ID", "Caption", "SP Code")	
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "customer_salespersonName", "Caption", "SP Name")
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_RATE", "Caption", "Cust Rate")	
+	gui.F_Commissions_Rates.GsGcCustomer.SetColumnProperty("custRateGV", "CUST_RATE", "DisplayCustomNumeric", "##0.00%")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadGridProperties.End
+
+Program.Sub.addRawData.Start
+v.Local.fRate.Declare
+v.Local.sTemp.Declare
+f.Intrinsic.Control.Try
+
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Data.DataTable.CreateFromSQL("tmpsalespeopleDT", "con", "Select ID as SP_ID, Name as salespersonName from V_Salespersons")
+	 	f.Data.DataTable.CreateFromSQL("tmpWarehouseDT", "con", "Select Location as locationID, Location_Desc as locationName from V_Locations")
+	 	f.Data.DataTable.CreateFromSQL("tmpcustRateDT", "con", "Select customer as CUST_ID, name_customer as customerName, salesperson as CUST_SP_ID From V_Customer_Master")
+	 	
+	 	f.Data.Dictionary.CreateFromSQL("dictionarySP", "con", "Select ID, Name from V_Salespersons")	 	
+	 	f.Data.Dictionary.CreateFromSQL("dictionarySP_Rate", "con", "Select SP_ID, SP_RATE from GCG_5645_OVR_RATES")
+	 	f.Data.Dictionary.CreateFromSQL("dictionarySP_User", "con", "Select SP_ID, SP_USER from GCG_5645_OVR_RATES")
+	 	f.Data.Dictionary.CreateFromSQL("dictionarySP_Vendor", "con", "Select SP_ID, SP_VENDOR from GCG_5645_OVR_RATES")
+	 	f.Data.Dictionary.CreateFromSQL("dictionaryCust_Rate", "con", "Select CUST_ID, CUST_RATE from GCG_5645_OVR_CUST_RT")
+		f.Data.Dictionary.CreateFromSQL("dictionaryWH_SP", "con", "Select locationID, agencyID from GCG_5645_OVR_WH_RT")
+		f.Data.Dictionary.CreateFromSQL("dictionaryWH_Rate", "con", "Select locationID, warehouseRate from GCG_5645_OVR_WH_RT")
+	 	
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = 'ZZZ'", v.Local.fRate)
+	f.ODBC.Connection!con.Close
+	
+	'Edit (DD - 10/9/19) - Customer is okay with setting the default rate themselves, including allowing 0% rate
+'	f.Intrinsic.Control.If(v.Local.fRate, =, 0)
+'		v.Local.fRate.Set(0.05)
+'	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.String.Format(v.Local.fRate, "0.00%", v.Local.sTemp)
+	gui.F_Commissions_Rates.txtDefaultRate.Text(v.Local.sTemp)
+	
+	
+	f.Data.Dictionary.SetDefaultReturn("dictionarySP_Rate", 0.0)
+	f.Data.DataTable.AddColumn("tmpsalespeopleDT", "SP_RATE", "Float")
+	f.Data.DataTable.FillFromDictionary("tmpsalespeopleDT", "dictionarySP_Rate", "SP_ID", "SP_RATE")
+	f.Data.Dictionary.Close("dictionarySP_Rate")
+	
+	f.Data.Dictionary.SetDefaultReturn("dictionarySP_User", " ")
+	f.Data.DataTable.AddColumn("tmpsalespeopleDT", "SP_USER", "String")
+	f.Data.DataTable.FillFromDictionary("tmpsalespeopleDT", "dictionarySP_User", "SP_ID", "SP_USER")
+	f.Data.Dictionary.Close("dictionarySP_User")
+	
+	f.Data.Dictionary.SetDefaultReturn("dictionarySP_Vendor", " ")
+	f.Data.DataTable.AddColumn("tmpsalespeopleDT", "SP_VENDOR", "String", " ", 6)
+	f.Data.DataTable.FillFromDictionary("tmpsalespeopleDT", "dictionarySP_Vendor", "SP_ID", "SP_VENDOR")
+	f.Data.Dictionary.Close("dictionarySP_Vendor")
+	
+'	f.Data.Dictionary.Create("stdRate")
+''	f.Data.Dictionary.AddItem("stdRate", 0, v.Local.fRate)
+''	f.Data.DataTable.FillFromDictionary("tmpsalespeopleDT", "stdRate", "SP_RATE", "SP_RATE")
+'	f.Data.Dictionary.Close("stdRate")
+	
+	f.Data.DataTable.AddColumn("tmpWarehouseDT", "agencyID", "String")
+	f.Data.Dictionary.SetDefaultReturn("dictionaryWH_SP", " ")
+	f.Data.DataTable.FillFromDictionary("tmpWarehouseDT", "dictionaryWH_SP", "locationID", "agencyID")
+	f.Data.Dictionary.Close("dictionaryWH_SP")
+
+	f.Data.DataTable.AddColumn("tmpWarehouseDT", "warehouseRate", "Float")
+	f.Data.Dictionary.SetDefaultReturn("dictionaryWH_Rate", "0")
+	f.Data.DataTable.FillFromDictionary("tmpWarehouseDT", "dictionaryWH_Rate", "locationID", "warehouseRate")
+	f.Data.Dictionary.Close("dictionaryWH_Rate")
+	
+	f.Data.Dictionary.SetDefaultReturn("dictionarySP", " ")
+	f.Data.DataTable.AddColumn("tmpcustRateDT", "customer_salespersonName", "String")
+	f.Data.DataTable.FillFromDictionary("tmpcustRateDT", "dictionarySP", "CUST_SP_ID", "customer_salespersonName")
+	
+	f.Data.DataTable.AddColumn("tmpWarehouseDT", "agencyName", "String")
+	f.Data.DataTable.FillFromDictionary("tmpWarehouseDT", "dictionarySP", "agencyID", "agencyName")
+	f.Data.Dictionary.Close("dictionarySP")
+	
+	f.Data.Dictionary.SetDefaultReturn("dictionaryCust_Rate", 0.0)
+	f.Data.DataTable.AddColumn("tmpcustRateDT", "CUST_RATE", "Float")
+	f.Data.DataTable.FillFromDictionary("tmpcustRateDT", "dictionaryCust_Rate", "CUST_ID", "CUST_RATE")
+	f.Data.Dictionary.Close("dictionaryCust_Rate")
+	
+	f.Data.DataTable.DeleteRow("salespeopleDT")
+	f.Data.DataTable.AcceptChanges("salespeopleDT")
+	f.Data.DataTable.Merge("tmpsalespeopleDT", "salespeopleDT", false, 2)
+	f.Data.DataTable.Close("tmpsalespeopleDT")
+
+	f.Data.DataTable.DeleteRow("warehouseDT")
+	f.Data.DataTable.AcceptChanges("warehouseDT")
+	f.Data.DataTable.Merge("tmpWarehouseDT", "warehouseDT", false, 2)
+	f.Data.DataTable.Close("tmpWarehouseDT")
+	
+	f.Data.DataTable.DeleteRow("custRateDT")
+	f.Data.DataTable.AcceptChanges("custRateDT")
+	f.Data.DataTable.Merge("tmpcustRateDT", "custRateDT", false, 2)
+	f.Data.DataTable.Close("tmpcustRateDT")	
+f.Intrinsic.Control.Catch
+
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.addRawData.End
+
+Program.Sub.F_Commissions_Rates_UnLoad.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Commissions_Rates_UnLoad.End
+
+Program.Sub.GsGcWarehouse_RowCellClick.Start
+v.Local.sColumn.Declare
+v.Local.sReturn.Declare
+f.Intrinsic.Control.Try
+	v.Local.sColumn.Set(v.Args.Column)
+	
+	f.Intrinsic.Control.SelectCase(v.Local.sColumn.UCase)
+		f.Intrinsic.Control.Case("AGENCYID")
+			
+			f.ODBC.Connection!con.OpenCompanyConnection
+			 	f.Intrinsic.UI.Browser("Agency ID", "con", "Select ID, Name, Email From V_SALESPERSONS", "ID*!*Name*!*Email", "40*!*80*!*140", v.Local.sReturn)
+			f.ODBC.Connection!con.Close
+			
+			f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+				f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+				f.Data.DataTable.SetValue("warehouseDT", v.Args.RowIndex, "agencyID", v.Local.sReturn(0), "agencyName", v.Local.sReturn(1))
+			f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.EndSelect
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.GsGcWarehouse_RowCellClick.End
+
+Program.Sub.GsGcCustomer_RowCellClick.Start
+v.Local.sColumn.Declare
+v.Local.sReturn.Declare
+v.Local.sCustomer.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	v.Local.sColumn.Set(v.Args.Column)
+	
+	f.Intrinsic.Control.SelectCase(v.Local.sColumn.UCase)
+		f.Intrinsic.Control.Case("CUSTOMER_SP_ID")
+			
+			f.ODBC.Connection!con.OpenCompanyConnection
+			 	f.Intrinsic.UI.Browser("Salespersons", "con", "Select ID, Name, Email From V_SALESPERSONS", "ID*!*Name*!*Email", "40*!*80*!*140", v.Local.sReturn)
+			f.ODBC.Connection!con.Close
+			
+			f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+				f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+				f.Data.DataTable.SetValue("custRateDT", v.Args.RowIndex, "customer_SP_ID", v.Local.sReturn(0), "customer_salespersonName", v.Local.sReturn(1))
+				
+				f.ODBC.Connection!con.OpenCompanyConnection
+					v.Local.sCustomer.Set(v.DataTable.custRateDT(v.Args.RowIndex).Cust_ID!FieldValTrim)
+				 	f.Intrinsic.String.Build("Update CUSTOMER_MASTER Set SALESPERSON = '{0}' Where CUSTOMER = '{1}' and Rec = '1'", v.Local.sReturn(0), v.Local.sCustomer, v.Local.sSQL)
+				 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+				f.ODBC.Connection!con.Close
+				
+			f.Intrinsic.Control.EndIf
+			
+		f.Intrinsic.Control.Case("CUSTOMER_SALESPERSONNAME")
+			
+			f.ODBC.Connection!con.OpenCompanyConnection
+			 	f.Intrinsic.UI.Browser("Salespersons", "con", "Select ID, Name, Email From V_SALESPERSONS", "ID*!*Name*!*Email", "40*!*80*!*140", v.Local.sReturn)
+			f.ODBC.Connection!con.Close
+			
+			f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+				f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+				f.Data.DataTable.SetValue("custRateDT", v.Args.RowIndex, "customer_SP_ID", v.Local.sReturn(0), "customer_salespersonName", v.Local.sReturn(1))
+				
+				f.ODBC.Connection!con.OpenCompanyConnection
+					v.Local.sCustomer.Set(v.DataTable.custRateDT(v.Args.RowIndex).Cust_ID!FieldValTrim)
+				 	f.Intrinsic.String.Build("Update CUSTOMER_MASTER Set SALESPERSON = '{0}' Where CUSTOMER = '{1}' and Rec = '1'", v.Local.sReturn(0), v.Local.sCustomer, v.Local.sSQL)
+				 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+				f.ODBC.Connection!con.Close
+				
+			f.Intrinsic.Control.EndIf	
+	f.Intrinsic.Control.EndSelect
+
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.GsGcCustomer_RowCellClick.End
+
+Program.Sub.contextMenu.Start
+f.Intrinsic.Control.Try
+	gui.F_Commissions_Rates..ContextMenuCreate("ctxSalesperson")
+	gui.F_Commissions_Rates.GsGcSalesmen.ContextMenuAttach("ctxSalesperson")
+	gui.F_Commissions_Rates..ContextMenuAddItem("ctxSalesperson", "Add", 0, "Add")
+	gui.F_Commissions_Rates..ContextMenuSetItemEventHandler("ctxSalesperson","Add","showAddForm")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.contextMenu.End
+
+Program.Sub.showAddForm.Start
+f.Intrinsic.Control.Try
+	gui.F_Add_SP.txtID.Text("")
+	gui.F_Add_SP.txtSP.Text("")
+	gui.F_Add_SP.txtVendor.Text("")
+	gui.F_Add_SP.txtEmployee.Text("")
+	gui.F_Add_SP..Show
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.showAddForm.End
+
+Program.Sub.F_Add_SP_UnLoad.Start
+f.Intrinsic.Control.Try
+	gui.F_Add_SP..Visible(False)
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Add_SP_UnLoad.End
+
+Program.Sub.cmdVendorBrw_Click.Start
+v.Local.sReturn.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.UI.Browser(300, , v.Local.sReturn)
+	f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+		f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+		gui.F_Add_SP.txtVendor.Text(v.Local.sReturn(0).Trim)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdVendorBrw_Click.End
+
+Program.Sub.cmdEmployeeBrw_Click.Start
+v.Local.sReturn.Declare
+f.Intrinsic.Control.Try
+	f.Intrinsic.UI.Browser(50, , v.Local.sReturn)
+	f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+		f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+		gui.F_Add_SP.txtEmployee.Text(v.Local.sReturn(0).Trim)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdEmployeeBrw_Click.End
+
+Program.Sub.cmdAddSP_Click.Start
+v.Local.sSP.Declare
+v.Local.sName.Declare
+v.Local.sVendor.Declare
+v.Local.sEmployee.Declare
+v.Local.sSQL.Declare
+v.Local.sReturn.Declare
+f.Intrinsic.Control.Try
+	v.Local.sSP.Set(v.Screen.F_Add_SP!txtID.Text)
+	v.Local.sName.Set(v.Screen.F_Add_SP!txtSP.Text)
+	v.Local.sVendor.Set(v.Screen.F_Add_SP!txtVendor.Text)
+	v.Local.sEmployee.Set(v.Screen.F_Add_SP!txtEmployee.Text)
+	
+	f.Intrinsic.Control.If(v.Local.sSP.Trim, =, "", AND, v.Local.sName.Trim, =, "")
+		f.Intrinsic.UI.Msgbox("Please fill ID and Salesperson.")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.If(v.Local.sVendor.Trim, <>, "", OR, v.Local.sEmployee.Trim, <>, "")
+		f.Intrinsic.UI.Msgbox("Please fill Vendor or Employee.")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.String.Build("Select ID from V_Salespersons where ID = '{0}'", v.Local.sSP.Trim, v.Local.sSQL)
+	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sReturn)
+	f.ODBC.Connection!con.Close
+	
+	f.Intrinsic.Control.If(v.Local.sReturn.Trim, =, "")
+		f.Intrinsic.UI.Msgbox("Salesperson/Agency ID already in use. Please select a new one.")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.String.Build("Insert into  Salespersons (ID, Name) Values ('{0}', '{1}')", v.Local.sSP, v.Local.sName, v.Local.sSQL)
+		f.ODBC.Connection!con.Execute(v.Local.sSQL)
+		f.Intrinsic.String.Build("Insert into  Salespersons (SalespersonsID, Name_Agency, Vendor, Employee) Values ('{0}', '{1}', '{2}', '{3}')", v.Local.sSP, v.Local.sName, v.Local.sVendor, v.Local.sEmployee, v.Local.sSQL)
+		f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdAddSP_Click.End
+
+Program.Sub.cmdSave_Click.Start
+v.Local.sTemp.Declare
+v.Local.f_Std_Rate.Declare
+f.Intrinsic.Control.Try
+
+	gui.F_Commissions_Rates..Enabled(False)
+	gui.F_Commissions_Rates..Caption("Commission Rate Maintenance - Saving")
+	
+	v.Local.sTemp.Set(v.Screen.F_Commissions_Rates!txtDefaultRate.Text!FieldVal)
+	F.Intrinsic.String.Format(V.Local.sTemp, "0.0###", V.Local.f_Std_Rate)
+	
+	f.Data.DataTable.AcceptChanges("salesPeopleDT")
+	'f.Data.DataView.Create("salesPeopleDT", "spRateSaveDV", 22, "SP_RATE > 0", "")
+	'Edit (DD - 10/9/19) - Customer wants to be able to set people's rates to 0 sometimes, so we cannot exclude those whose rate is 0
+	f.Data.DataView.Create("salesPeopleDT", "spRateSaveDV", 22)
+	f.Data.DataView.ToDataTableDistinct("salesPeopleDT", "spRateSaveDV", "spSaveDT", "SP_ID*!*SP_USER*!*SP_VENDOR*!*SP_RATE")
+	f.Data.DataView.Close("salesPeopleDT", "spRateSaveDV")
+	f.Data.DataTable.AddRow("spSaveDT", "SP_ID", "ZZZ", "SP_USER", " ", "SP_RATE", v.Local.f_Std_Rate)
+	f.Data.DataTable.AddColumn("spSaveDT", "GSS_USER", "String", v.Caller.User)
+	f.Data.DataTable.AddColumn("spSaveDT", "GSS_DATE", "String", v.Ambient.Date.PervasiveDate)
+	
+	f.Data.DataTable.AcceptChanges("custRateDT")
+	'Edit (DD - 10/9/19) - Customer wants to be able to set customers' rates to 0 sometimes, so we cannot exclude those whose rate is 0
+	'f.Data.DataView.Create("custRateDT", "custRateSaveDV", 22, "CUST_RATE > 0", "")
+	f.Data.DataView.Create("custRateDT", "custRateSaveDV", 22)
+	f.Data.DataView.ToDataTableDistinct("custRateDT", "custRateSaveDV", "custSaveDT", "CUST_ID*!*CUST_RATE*!*CUST_SP_ID")
+	f.Data.DataView.Close("custRateDT", "custRateSaveDV")
+	f.Data.DataTable.AddColumn("custSaveDT", "GSS_USER", "String", v.Caller.User)
+	f.Data.DataTable.AddColumn("custSaveDT", "GSS_DATE", "String", v.Ambient.Date.PervasiveDate)
+	
+	f.Data.DataTable.AcceptChanges("warehouseDT")
+	'Edit (DD - 10/9/19) - Customer wants to be able to set warehouses' rates to 0 sometimes, so we cannot exclude those whose rate is 0
+	'f.Data.DataView.Create("warehouseDT", "whRateSaveDV", 22, "warehouseRate > 0", "")
+	f.Data.DataView.Create("warehouseDT", "whRateSaveDV", 22)
+	f.Data.DataView.ToDataTableDistinct("warehouseDT", "whRateSaveDV", "whSaveDT", "locationID*!*agencyID*!*warehouseRate")
+	f.Data.DataView.Close("warehouseDT", "whRateSaveDV")
+	f.Data.DataTable.AddColumn("whSaveDT", "GSS_USER", "String", v.Caller.User)
+	f.Data.DataTable.AddColumn("whSaveDT", "GSS_DATE", "String", v.Ambient.Date.PervasiveDate)
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Data.DataTable.SaveToDB("spSaveDT", "con", "GCG_5645_OVR_RATES", "SP_ID", 256)
+	 	f.Data.DataTable.SaveToDB("custSaveDT", "con", "GCG_5645_OVR_CUST_RT", "CUST_ID", 256)
+	 	f.Data.DataTable.SaveToDB("whSaveDT", "con", "GCG_5645_OVR_WH_RT", "LOCATIONID", 256)
+	f.ODBC.Connection!con.Close
+	
+	
+	gui.F_Commissions_Rates..Caption("Commission Rate Maintenance")
+	gui.F_Commissions_Rates..Enabled(True)
+f.Intrinsic.Control.Catch
+
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.GsGcSalesmen_RowCellClick.Start
+v.Local.sColumn.Declare
+v.Local.sRet.Declare
+v.Local.sUser.Declare
+f.Intrinsic.Control.Try
+	v.Local.sColumn.Set(v.Args.Column)
+	f.Intrinsic.Control.SelectCase(v.Local.sColumn.UCase)
+		f.Intrinsic.Control.Case("SP_USER")
+			f.ODBC.Connection!con.OpenCommonConnection
+			 	f.Intrinsic.UI.Browser("User", "con", "Select USER_ID, GS_USER, FIRST_NAME, LAST_NAME from USER_INFORMATION", "USER_ID*!*GS_USER*!*FIRST_NAME*!*LAST_NAME", "60*!*90*!*100*!*100", v.Local.sRet)
+			 f.ODBC.Connection!con.Close
+
+			 f.Intrinsic.Control.If(v.Local.sRet.Trim, <>, "***CANCEL***")
+			 	f.Intrinsic.String.Split(v.Local.sRet, "*!*", v.Local.sUser)
+			 	f.Data.DataTable.SetValue("salespeopleDT", v.Args.RowIndex, "SP_USER", v.Local.sUser(1))
+			 f.Intrinsic.Control.EndIf		 	
+			
+	f.Intrinsic.Control.EndSelect
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.GsGcSalesmen_RowCellClick.End
