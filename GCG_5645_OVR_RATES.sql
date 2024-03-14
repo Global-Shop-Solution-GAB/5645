@@ -1,0 +1,13 @@
+-- Begin Tables
+SET LEGACYTYPESALLOWED = ON;
+-- Begin Multi-Line Statement
+CREATE TABLE "GCG_5645_OVR_RATES" (
+ "SP_ID" CHAR(3),
+ "SP_USER" CHAR(9),
+ "SP_RATE" NUMERIC(6,4) DEFAULT '0.0',
+ "GSS_USER" CHAR(9),
+ "GSS_DATE" CHAR(10),
+ "SP_VENDOR" CHAR(6) );
+-- End Multi-Line Statement
+SET LEGACYTYPESALLOWED = OFF;
+-- End Tables
