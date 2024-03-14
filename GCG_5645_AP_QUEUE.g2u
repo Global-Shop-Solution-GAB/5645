@@ -1,0 +1,575 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Caption("AP QUEUE")
+Gui.Form..Size(12525,8055)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.GsGridControl1.Create(GsGridControl)
+Gui.Form.GsGridControl1.Size(12210,6975)
+Gui.Form.GsGridControl1.Position(45,30)
+Gui.Form.cmd1.Create(Button)
+Gui.Form.cmd1.Size(855,375)
+Gui.Form.cmd1.Position(11370,7050)
+Gui.Form.cmd1.Caption("OK")
+Gui.Form.cmd1.Event(Click,cmd1_Click)
+Program.Sub.ScreenSU.End
+Program.Sub.Preflight.Start
+Program.External.Include.Library("UPLAPOP.lib")
+v.Global.sCurrentBatch.Declare
+v.Global.sCurrentInvoice.Declare
+v.Global.sGL_Lines.Declare
+v.Global.sText.Declare
+v.Global.bContinue.Declare
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: Alejandro Anazco V.
+'11/7/2019
+'Programmed for EMC
+'Purpose: Process Queued Commissions.
+f.Intrinsic.Control.Try
+'Try something
+	f.Intrinsic.Control.CallSub(getQueuedAP)
+	'f.Intrinsic.Control.CallSub(getApQueuePast)
+	f.Intrinsic.UI.Msgbox("Complete")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Closes ODBC connection, default to connection : "con"
+f.Intrinsic.Control.If(v.ODBC!con.State, =, 1)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.EndIf
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_5645_AP_QUEUE.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.getQueuedAP.Start
+v.Local.iCnt.Declare
+v.Local.iCnt2.Declare
+v.Local.iLine.Declare
+v.Local.sFilePathUpLoad.Declare
+
+v.Local.sPL.Declare
+v.Local.sFilter.Declare
+
+v.Local.sVendor.Declare
+v.Local.sBatchLine.Declare
+v.Local.sTransCode.Declare
+v.Local.sDate.Declare
+v.Local.sInvDate.Declare
+
+v.Local.sGLAccount1.Declare
+v.Local.sGLAccount2.Declare
+
+v.Local.sSQL.Declare
+
+v.Local.fCommTotal.Declare
+v.Local.fTotalCheck.Declare
+
+v.Local.sInvoiceCheck.Declare
+v.Local.sRet.Declare
+v.Local.sInvoice.Declare
+
+v.Local.sFilePathData.Declare
+v.Local.ftotalComm.Declare
+
+f.Intrinsic.Control.Try
+
+	'Get AP Queue not processed
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	'f.Data.DataTable.CreateFromSQL("queueDT", "con", "Select * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'IV' and AP_Batch = 'O0069' and Comm_total <> '0';", true)
+	 	'f.Data.DataTable.CreateFromSQL("tmpqueueDT", "con", "Select * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'IV' and Comm_total <> '0'", true)
+	 	'f.Data.DataTable.CreateFromSQL("queueDT", "con", "Select * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'IV' and Comm_total <> '0'", true)
+	 	f.Data.DataTable.CreateFromSQL("queueDT", "con", "Select distinct * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'IV' and Comm_total <> '0'", true)
+	 	
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'ACGL'", v.Local.sGLAccount1)
+	f.ODBC.Connection!con.Close
+	'Get Distinct Lines
+'	f.Data.DataView.Create("tmpqueueDT", "tmpqueueDV", 22)
+'	f.Data.DataView.ToDataTableDistinct("tmpqueueDT", "tmpqueueDV", "queueDT", "Order_No*!*Line_No*!*Invoice*!*Vendor*!*IDENTIFIER", True)
+'	f.Data.DataView.Close("tmpqueueDT", "tmpqueueDV")
+'	f.Data.DataTable.Close("tmpqueueDT")
+	
+	f.Data.DataView.Create("queueDT", "queueDV", 22)
+	gui.Form.GsGridControl1.AddGridviewFromDataview("queueGV", "queueDT", "queueDV")
+	gui.Form.GsGridControl1.MainView("queueGV")
+	
+	f.Data.DataTable.Compute("queueDT", "Sum(Comm_Total)", "", v.Local.fCommTotal)
+	
+	v.Global.bContinue.Set(False)
+	
+	f.Intrinsic.Control.CallSub(loadGridProperties)
+	
+	gui.Form..Show
+	
+	f.Intrinsic.Control.DoUntil(v.Global.bContinue)
+		
+	f.Intrinsic.Control.Loop
+	
+	'f.Data.DataView.ToDataTableDistinct("queueDT", "queueDV", "'endorDistinctDT", "Product_Line*!*Vendor")
+'	Function.Intrinsic.Debug.Stop
+	f.Intrinsic.Control.CallSub(getNextBatch)	
+	f.Intrinsic.String.Format(v.Ambient.Date, "MMDDYY", v.Local.sDate)
+	
+	f.Intrinsic.Control.If(v.DataTable.queueDT.RowCount--, =, -1)
+		f.Data.DataView.Close("queueDT", "queueDV")
+		f.Data.DataTable.Close("queueDT")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.queueDT.RowCount--, 1)
+	
+		v.Local.sGLAccount2.Set("")
+		v.Local.sVendor.Set(v.DataTable.queueDT(v.Local.iCnt).Vendor!FieldValTrim)
+		v.Local.sPL.Set(v.DataTable.queueDT(v.Local.iCnt).Product_Line!FieldValTrim)
+		f.ODBC.Connection!con.OpenCompanyConnection
+	 	 	f.Intrinsic.String.Build("Select glAccount from GCG_5645_GL_ACCNTS where product_Line  = '{0}' and  systemGL = 'PLGL'", v.Local.sPL, v.Local.sSQL)
+	 	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sGLAccount2)
+		f.ODBC.Connection!con.Close
+		
+		f.Intrinsic.Control.If(v.Local.sGLAccount2.Trim, <>, "")
+			v.Local.fCommTotal.Set(0)
+			v.Local.fCommTotal.Set(v.DataTable.queueDT(v.Local.iCnt).Comm_Total!FieldVal)
+			v.Local.sInvoice.Set(v.DataTable.queueDT(v.Local.iCnt).Invoice!FieldValTrim)
+			
+			f.Intrinsic.Control.If(v.Local.fCommTotal, <>, 0)
+				'New GL Allocations:
+				'add GL Account to GL LINE
+				f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount2, passedTransType, "07", passedMult, 1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Local.sDate, passedAmount, v.Local.fCommTotal, passedInvDate, v.Local.sDate, passedVendor, v.Local.sVendor, passedInvoice, v.Local.sInvoice)
+				'add GL Account to GL LINE
+				f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount1, passedTransType, "07", passedMult, -1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Local.sDate, passedAmount, v.Local.fCommTotal, passedInvDate, v.Local.sDate, passedVendor, v.Local.sVendor, passedInvoice, v.Local.sInvoice)
+				
+				'Save Batch Numbers and Batch Invoices.
+				f.Data.DataView.SetValue("queueDT", "queueDV", v.Local.iCnt ,"AP_Batch", v.Global.sCurrentBatch)
+				f.Data.DataView.SetValue("queueDT", "queueDV", v.Local.iCnt, "Processed", "Y")
+			f.Intrinsic.Control.EndIf
+			
+		f.Intrinsic.Control.EndIf
+
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	f.Intrinsic.String.Build("{0}\GLDETAIL.TXT", v.Caller.FilesDir, v.Local.sFilePathUpLoad)
+	f.Intrinsic.File.String2File(v.Local.sFilePathUpLoad, v.Global.sGL_Lines)
+	
+	f.Intrinsic.String.Build("{0}\GLDETAIL_COMM.TXT", v.Caller.FilesDir, v.Local.sFilePathUpLoad)
+	f.Intrinsic.File.String2File(v.Local.sFilePathUpLoad, v.Global.sGL_Lines)
+	
+	f.Global.General.CallWrapperSync(50, "UPLGDETL/U")
+	v.Global.sGL_Lines.Set("")
+	
+	f.Data.DataTable.AcceptChanges("queueDT")
+	f.Data.DataView.SetFilter("queueDT", "queueDV", "AP_Batch <> ''")
+
+	f.Data.DataTable.AcceptChanges("queueDT")
+	f.Data.DataView.SetFilter("queueDT", "queueDV", "Processed = 'Y'")
+	f.Data.DataView.ToDataTable("queueDT", "queueDV", "saveDT")
+	
+	f.Data.DataTable.Create("saveCommDT")
+	f.Data.DataTable.AddColumn("saveCommDT", "Order_No", "String")
+	f.Data.DataTable.AddColumn("saveCommDT", "Line_No", "String")
+	f.Data.DataTable.AddColumn("saveCommDT", "Invoice", "String")
+	f.Data.DataTable.AddColumn("saveCommDT", "IDENTIFIER", "String")
+	f.Data.DataTable.AddColumn("saveCommDT", "Vendor", "String")
+	f.Data.DataTable.AddColumn("saveCommDT", "AP_BATCH", "String")
+	f.Data.DataTable.AddColumn("saveCommDT", "FLG_COM_PAYABLE", "String", "Y")
+	f.Data.DataTable.AddColumn("saveCommDT", "GSS_USER", "String", v.Caller.User)
+	f.Data.DataTable.AddColumn("saveCommDT", "LAST_DATE", "String", v.Ambient.Date.PervasiveDate)
+	f.Data.DataTable.AddColumn("saveCommDT", "Product_Line", "String")	
+	
+	f.Data.DataTable.AcceptChanges("saveDT")
+	f.Data.DataTable.Merge("saveDT", "saveCommDT", false, 2)
+	f.Data.DataTable.Close("saveDT")
+	
+	f.Data.DataTable.SetValue("saveCommDT", -1, "FLG_COM_PAYABLE", "Y")
+	f.Data.DataTable.SetValue("saveCommDT", -1, "AP_BATCH", v.Global.sCurrentBatch)
+	f.Data.DataTable.AcceptChanges("saveCommDT")
+	
+	f.Intrinsic.String.Build("{0}\FullComm.CSV", v.Caller.FilesDir, v.Local.sFilePathData)
+	f.Data.DataTable.SaveToCSV("saveCommDT", v.Local.sFilePathData, True)
+	 	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Data.DataTable.SaveToDB("saveCommDT", "con", "GCG_5645_COMMISSIONS", "Order_No*!*Line_No*!*Invoice*!*Vendor*!*IDENTIFIER", 256, "Order_No@!@Order_No*!*Line_No@!@Line_No*!*Invoice@!@Invoice*!*Vendor@!@Vendor*!*AP_BATCH@!@AP_BATCH*!*FLG_COM_PAYABLE@!@FLG_COM_PAYABLE*!*GSS_USER@!@GSS_USER*!*LAST_DATE@!@LAST_DATE*!*Product_Line@!@PL*!*IDENTIFIER@!@IDENTIFIER")
+	 	f.Data.DataTable.SaveToDB("queueDT", "con", "GCG_5645_AP_QUEUE", "Order_No*!*Line_No*!*Product_Line*!*Vendor*!*IDENTIFIER*!*INVOICE", 256, "Order_No@!@Order_No*!*Line_No@!@Line_No*!*Product_Line@!@Product_Line*!*Invoice@!@Invoice*!*Invoice_Date@!@Invoice_Date*!*Vendor@!@Vendor*!*Rate@!@Rate*!*Comm_Total@!@Comm_Total*!*Processed@!@Processed*!*AP_Invoice@!@AP_Invoice*!*AP_Batch@!@AP_Batch*!*Type@!@Type*!*IDENTIFIER@!@IDENTIFIER")
+	 	'gET Payroll Records.
+	 	'f.Data.DataTable.CreateFromSQL("prDT", "con" ,"Select * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'PR';")
+	 	f.Data.DataTable.CreateFromSQL("prDT", "con" ,"Select distinct * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'PR';")
+	 	'f.Data.DataTable.CreateFromSQL("tmpprDT", "con" ,"Select * from GCG_5645_AP_QUEUE where Processed = 'N' and Type = 'PR';")
+	 f.ODBC.Connection!con.Close
+	 	
+	 	'Get Distinct Lines
+'		f.Data.DataView.Create("tmpprDT", "tmpprDV", 22)
+'		f.Data.DataView.ToDataTableDistinct("tmpprDT", "tmpprDV", "prDT", "Order_No*!*Line_No*!*Invoice*!*Vendor*!*IDENTIFIER", True)
+'		f.Data.DataView.Close("tmpprDT", "tmpprDV")
+'		f.Data.DataTable.Close("tmpprDT")
+'		
+	 	f.Data.DataView.Create("prDT", "prDV", 22)
+	 	f.Data.DataTable.SetValue("prDT", -1, "Processed", "Y")
+'	 	f.Data.DataTable.DeleteRow("saveCommDT")
+'	 	f.Data.DataTable.AcceptChanges("saveCommDT")
+'		f.Data.DataTable.Merge("prDT", "saveCommDT", false, 2)
+		
+		
+	
+		f.Intrinsic.Control.If(v.DataTable.prDT.RowCount, >, 0)
+			f.Intrinsic.Control.CallSub(getNextBatch)
+			f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.prDT.RowCount--, 1)	
+				v.Local.sGLAccount2.Set("")
+				v.Local.sVendor.Set(v.DataTable.prDT(v.Local.iCnt).Vendor!FieldValTrim)
+				v.Local.sPL.Set(v.DataTable.prDT(v.Local.iCnt).Product_Line!FieldValTrim)
+				f.ODBC.Connection!con.OpenCompanyConnection
+			 	 	f.Intrinsic.String.Build("Select glAccount from GCG_5645_GL_ACCNTS where product_Line  = '{0}' and  systemGL = 'PLGL'", v.Local.sPL, v.Local.sSQL)
+			 	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sGLAccount2)
+				f.ODBC.Connection!con.Close
+				
+				v.Local.sGLAccount2.Set("6200.700.07.04")
+				v.Local.sGLAccount1.Set("2281.010.00.00")
+				
+				f.Intrinsic.Control.If(v.Local.sGLAccount2.Trim, <>, "")
+					v.Local.fCommTotal.Set(0)
+					v.Local.fCommTotal.Set(v.DataTable.prDT(v.Local.iCnt).Comm_Total!FieldVal)
+					v.Local.sInvoice.Set(v.DataTable.prDT(v.Local.iCnt).Invoice!FieldValTrim)
+					
+					f.Intrinsic.Control.If(v.Local.fCommTotal, <>, 0)
+						'New GL Allocations:
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount2, passedTransType, "07", passedMult, 1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Local.sDate, passedAmount, v.Local.fCommTotal, passedInvDate, v.Local.sDate, passedVendor, v.Local.sVendor, passedInvoice, v.Local.sInvoice)
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount1, passedTransType, "07", passedMult, -1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Local.sDate, passedAmount, v.Local.fCommTotal, passedInvDate, v.Local.sDate, passedVendor, v.Local.sVendor, passedInvoice, v.Local.sInvoice)
+						
+						'Save Batch Numbers and Batch Invoices.
+						'f.Data.DataView.SetValue("prDT", "prDV", v.Local.iCnt ,"AP_Batch", v.Global.sCurrentBatch)
+						f.Data.DataView.SetValue("prDT", "prDV", v.Local.iCnt ,"AP_Batch", v.Global.sCurrentBatch)
+						f.Data.DataView.SetValue("prDT", "prDV", v.Local.iCnt, "Processed", "Y")
+					f.Intrinsic.Control.EndIf
+					
+				f.Intrinsic.Control.EndIf
+	
+			f.Intrinsic.Control.Next(v.Local.iCnt)
+			
+			f.Data.DataTable.DeleteRow("saveCommDT")
+	 		f.Data.DataTable.AcceptChanges("saveCommDT")
+			f.Data.DataTable.Merge("prDT", "saveCommDT", false, 2)
+			
+			f.Intrinsic.String.Build("{0}\PayRollComm.CSV", v.Caller.FilesDir, v.Local.sFilePathData)
+			f.Data.DataTable.SaveToCSV("saveCommDT", v.Local.sFilePathData, True)
+	
+			f.Intrinsic.String.Build("{0}\GLDETAIL.TXT", v.Caller.FilesDir, v.Local.sFilePathUpLoad)
+			f.Intrinsic.File.String2File(v.Local.sFilePathUpLoad, v.Global.sGL_Lines)
+			
+			f.Global.General.CallWrapperSync(50, "UPLGDETL/U")
+			v.Global.sGL_Lines.Set("")
+			f.ODBC.Connection!con.OpenCompanyConnection	
+				f.Data.DataTable.SaveToDB("saveCommDT", "con", "GCG_5645_COMMISSIONS", "Order_No*!*Line_No*!*Invoice*!*Vendor*!*IDENTIFIER", 256, "Order_No@!@Order_No*!*Line_No@!@Line_No*!*Invoice@!@Invoice*!*Vendor@!@Vendor*!*AP_BATCH@!@AP_BATCH*!*FLG_COM_PAYABLE@!@FLG_COM_PAYABLE*!*GSS_USER@!@GSS_USER*!*LAST_DATE@!@LAST_DATE*!*Product_Line@!@PL*!*IDENTIFIER@!@IDENTIFIER")
+		 		f.Data.DataTable.SaveToDB("prDT", "con", "GCG_5645_AP_QUEUE", "Order_No*!*Line_No*!*Product_Line*!*Vendor*!*IDENTIFIER*!*INVOICE", 256, "Order_No@!@Order_No*!*Line_No@!@Line_No*!*Product_Line@!@Product_Line*!*Invoice@!@Invoice*!*Invoice_Date@!@Invoice_Date*!*Vendor@!@Vendor*!*Rate@!@Rate*!*Comm_Total@!@Comm_Total*!*Processed@!@Processed*!*AP_Invoice@!@AP_Invoice*!*AP_Batch@!@AP_Batch*!*Type@!@Type*!*IDENTIFIER@!@IDENTIFIER")
+		 	f.ODBC.Connection!con.Close	
+		f.Intrinsic.Control.EndIf
+		
+	
+	
+	f.Data.DataView.Close("queueDT", "queueDV")
+	f.Data.DataTable.Close("queueDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getQueuedAP.End
+
+Program.Sub.getNextBatch.Start
+v.Local.sBatch.Declare
+v.Local.iNumBatch.Declare
+v.Local.sTemp.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get Top Batch
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 AP_BATCH From GCG_5645_AP_INVBATCH order by AP_BATCH desc", v.Local.sBatch)
+	f.ODBC.Connection!con.Close
+	'Trim
+	f.Intrinsic.String.Trim(v.Local.sBatch, v.Local.sBatch)
+	'Check if it is empty
+	f.Intrinsic.Control.If(v.Local.sBatch, =, "")
+		'If Emptry, start with M0001
+		v.Local.sBatch.Set("O0001")
+	f.Intrinsic.Control.Else
+		'Get Next Batch.
+		f.Intrinsic.String.Right(v.Local.sBatch, 4, v.Local.sTemp)
+		v.Local.iNumBatch.Set(v.Local.sTemp)
+		f.Intrinsic.Math.Add(v.Local.iNumBatch, 1, v.Local.iNumBatch)
+		f.Intrinsic.String.LPad(v.Local.iNumBatch, "0", 4, v.Local.sTemp)
+		f.Intrinsic.String.Build("O{0}", v.Local.sTemp, v.Local.sBatch)
+	f.Intrinsic.Control.EndIf	
+	'Set batch to global variable.
+	v.Global.sCurrentBatch.Set(v.Local.sBatch)
+	f.Intrinsic.String.Build("Insert into  GCG_5645_AP_INVBATCH (AP_BATCH) Values ('{0}')", v.Global.sCurrentBatch, v.Local.sSQL)
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getNextBatch.End
+
+Program.Sub.getNextInv.Start
+v.Local.sInvoice.Declare
+v.Local.iNumInvoice.Declare
+v.Local.sTemp.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get Top Invoice
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 AP_INV From GCG_5645_AP_INVBATCH order by AP_INV desc", v.Local.sInvoice)
+	f.ODBC.Connection!con.Close
+	'Trim
+	f.Intrinsic.String.Trim(v.Local.sInvoice, v.Local.sInvoice)
+	'Check if it is empty
+	f.Intrinsic.Control.If(v.Local.sInvoice, =, "")
+		'If Emptry, start with M000001
+		v.Local.sInvoice.Set("O000001")
+	f.Intrinsic.Control.Else
+		'Get Next Invoice.
+		f.Intrinsic.String.Right(v.Local.sInvoice, 6, v.Local.sTemp)
+		v.Local.iNumInvoice.Set(v.Local.sTemp)
+		f.Intrinsic.Math.Add(v.Local.iNumInvoice, 1, v.Local.iNumInvoice)
+		f.Intrinsic.String.LPad(v.Local.iNumInvoice, "0", 6, v.Local.sTemp)
+		f.Intrinsic.String.Build("O{0}", v.Local.sTemp, v.Local.sInvoice)
+	f.Intrinsic.Control.EndIf	
+	'Set Invoice to global variable.
+	v.Global.sCurrentInvoice.Set(v.Local.sInvoice)
+	'Save Invoice.
+	f.Intrinsic.String.Build("Insert into  GCG_5645_AP_INVBATCH (AP_BATCH, AP_INV) Values ('{0}', '{1}')", v.Global.sCurrentBatch, v.Global.sCurrentInvoice, v.Local.sSQL)
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getNextInv.End
+
+Program.Sub.writeUPLGDETL_File.Start
+v.Local.sLine.Declare
+v.Local.iCnt.Declare
+v.Local.sTemp.Declare
+v.Local.sBatch.Declare
+v.Local.sBatchNumber.Declare
+v.Local.sEmpty.Declare
+v.Local.sGL_Account.Declare
+v.Local.sPostDate.Declare
+v.Local.iTerms.Declare
+v.Local.dTempDate.Declare(date)
+v.Local.sCustomer.Declare
+v.Local.sFilter.Declare
+v.Local.sTransactionType.Declare
+v.Local.bDateError.Declare
+v.Local.fAmount.Declare
+'v.Local.dTempDate.Declare
+f.Intrinsic.Control.Try	
+	v.Local.sGL_Account.Set(v.Args.passedGL)
+	v.Local.sTransactionType.Set(v.Args.passedTransType)
+	
+	'GL Account
+	f.Intrinsic.String.RPad(V.Local.sGL_Account, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Post Date 
+	v.Local.sEmpty.Set(v.Args.passedBatchDate)
+	f.Intrinsic.Date.ConvertDString(v.Local.sEmpty, "MMDDYY", v.Local.dTempDate)
+	f.Intrinsic.String.Format(v.Local.dTempDate, "YYYYMMDD", v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	'Transaction Batch Number
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Args.passedBatchNumber, v.Local.sLine)
+	'Transaction Batch Number
+	v.Local.sEmpty.Set("")
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 5, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Transaction Voucher Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Reference
+	'f.Intrinsic.Control.CallSub(addField, passedLenght, 15, passedRow, v.Local.iCnt, passedField, "Invoice_Number")
+	f.Intrinsic.String.RPad(v.Args.passedInvoice, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Amount
+	'f.Intrinsic.Control.CallSub(addLeftField, passedLenght, 16, passedRow, v.Local.iCnt, passedField, "Invoice_Total")
+	v.Local.fAmount.Set(v.Args.passedAmount)
+	f.Intrinsic.Math.Mult(v.Local.fAmount, v.Args.passedMult, v.Local.fAmount)
+	f.Intrinsic.String.LPad(v.Local.fAmount.String, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Description  
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 30, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Application Type
+	'f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 2, v.Local.sEmpty)
+	v.Local.sEmpty.Set("AP")
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Transaction Type
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sTransactionType, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Customer ID
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Vendor ID
+	f.Intrinsic.String.RPad(v.Args.passedVendor, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'PO Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Invoice Number
+	v.Local.sEmpty.Set(v.Global.sCurrentInvoice)
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+
+	'Invoice Date.
+	'Function.Intrinsic.Debug.Stop
+	v.Local.sEmpty.Set(v.Args.passedInvDate)
+	f.Intrinsic.Date.ConvertDString(v.Local.sEmpty, "MMDDYY", v.Local.dTempDate)
+	f.Intrinsic.String.Format(v.Local.dTempDate, "YYYYMMDD", v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	
+	'Invoice Due Date
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 8, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine,  v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check System
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 2, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 6, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Date
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 8, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Gross Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Discount Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 11, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Net Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")		
+
+
+	f.Intrinsic.Control.If(v.Global.[v.Args.GL_LINES], =, "")
+		v.Global.[v.Args.GL_LINES].Set(v.Local.sLine)
+	f.Intrinsic.Control.Else
+		f.Intrinsic.String.Build("{0}{1}{2}", v.Global.[v.Args.GL_LINES], v.Ambient.NewLine, v.Local.sLine, v.Global.[v.Args.GL_LINES])
+	f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.writeUPLGDETL_File.End
+
+Program.Sub.cmd1_Click.Start
+v.Global.bContinue.Set(true)
+gui.Form.cmd1.Enabled(false)
+Program.Sub.cmd1_Click.End
+
+Program.Sub.loadGridProperties.Start
+v.Local.iCnt.Declare
+v.Local.sFields.Declare
+v.Local.iVisibleIndex.Declare
+
+f.Intrinsic.Control.Try
+	f.Intrinsic.String.Split(v.DataTable.queueDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Near")
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.Form.GsGridControl1.SetColumnProperty("queueGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	'GridView Properties
+	gui.Form.GsGridControl1.BestFitColumns("queueGV")
+	gui.Form.GsGridControl1.SetGridviewProperty("queueGV", "OptionsViewColumnAutoWidth", False)
+	'gui.Form.GsGridControl1.SetGridviewProperty("queueGV", "OptionsViewShowAutoFilterRow", True)
+	'gui.Form.GsGridControl1.SetGridviewProperty("queueGV", "OptionsFindAlwaysVisible", True)
+	'gui.Form.GsGridControl1.SetGridviewProperty("queueGV", "Showgrouppanel", True)
+	
+	gui.Form.GsGridControl1.AddSummaryItem("queueGV", "Comm_Total", "tag1", "SUM", "", "")
+	
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Order_no", "Caption", "Order No")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Line_No", "Caption", "Line No")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Product_Line", "Caption", "PL")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Invoice", "Caption", "Invoice")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Invoice_Date", "Caption", "Invoice Date")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Vendor", "Caption", "Vendor")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Rate", "Caption", "Rate")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Comm_Total", "Caption", "Commission")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Processed", "Caption", "Processed")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "AP_Invoice", "Caption", "AP Invoice")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "AP_Batch", "Caption", "AP Batch")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Type", "Caption", "Type")
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Identifier", "Caption", "Identifier")
+	
+	'Possible Column Properties 
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "ReadOnly", False)
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "AllowEdit", True)
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "HeaderHAlignment", "Center")
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "CellHAlignment", "Center")
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "Caption", "Default")
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "Visible", False)
+	'gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Default", "DisplayCustomDatetime", "d")
+	
+	'VisibleIndex
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Order_no", "VisibleIndex", v.Local.iVisibleIndex)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Line_No", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Product_Line", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Invoice", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Invoice_Date", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Vendor", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Rate", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Comm_Total", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Type", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Processed", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "Identifier", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "AP_Invoice", "VisibleIndex", v.Local.iVisibleIndex.++)
+	gui.Form.GsGridControl1.SetColumnProperty("queueGV", "AP_Batch", "VisibleIndex", v.Local.iVisibleIndex.++)
+	
+	'Conditional Formatting
+'	gui.Form.GsGridControl1.AddStyleFormatCondition("queueGV", "columnName", "TagName", "EQUAL", 1)
+'	gui.Form.GsGridControl1.SetStyleFormatConditionProperty("queueGV", "columnName", "TagName", "ApplyToRow", True) 
+'	gui.Form.GsGridControl1.SetStyleFormatConditionProperty("queueGV", "columnName", "TagName", "BackColor", "Color") 
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadGridProperties.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.End
+Program.Sub.Form_UnLoad.End
+
+
+
+
