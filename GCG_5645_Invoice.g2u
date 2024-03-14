@@ -1,0 +1,137 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: Alejandro Anazco V.
+'11/7/2019
+'Programmed for EMC
+'Purpose: Purpose
+
+f.Intrinsic.Control.Try
+
+'Hook: 15225 - Post Process Invoice.
+	f.Intrinsic.Control.SelectCase(v.Caller.Hook)
+		f.Intrinsic.Control.Case(15225)
+			f.Intrinsic.Control.CallSub(createCommRecord)
+			f.Intrinsic.Control.CallSub(queueInvoice)
+	f.Intrinsic.Control.EndSelect
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Closes ODBC connection, default to connection : "con"
+f.Intrinsic.Control.If(v.ODBC!con.State, =, 1)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.EndIf
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project ProjectName.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.createCommRecord.Start
+v.Local.sInvoice.Declare
+v.Local.sOrder_No.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+'Try something
+
+	'Get Invoice.
+	v.Local.sInvoice.Set(v.Passed.009000)
+	'v.Local.sInvoice.Set("000034")
+	'Get Pre - Commissions matching the lines.
+	f.ODBC.Connection!con.OpenCompanyConnection
+		'Get the Pre Commissions that are not flagged as invoiced that also match Invoice Records from Order_Hist_Line. To flag as Invoiced
+		f.Intrinsic.String.Build("Select distinct A.Order_Line, A.Order_No, A.Line_No, A.Identifier, A.Salesperson, A.Rate From GCG_5645_PRE_COMM A Inner Join V_Order_Hist_Line B on A.Order_No = B.Order_No and A.Line_No = B.Order_Line where B.Invoice = '{0}' and A.Rate <> '0.00'", v.Local.sInvoice, v.Local.sSQL)
+		f.Data.DataTable.CreateFromSQL("preCommDT", "con", v.Local.sSQL, true)
+		
+		'Get the Pre Commissions match Invoice Records from Order_Hist_Line to Use for Commission DT.
+'		f.Intrinsic.String.Build("Select A.Order_Line, A.Order_No, A.Line_No, B.Invoice, B.Date_Invoice as INVOICE_DATE, B.Extension as INVOICE_AMT, A.Identifier, A.Salesperson, A.Rate, A.GSS_USER, A.LAST_DATE, A.Vendor From GCG_5645_PRE_COMM A Inner Join V_Order_Hist_Line B on A.Order_No = B.Order_No and A.Line_No = B.Order_Line where Invoice = '{0}';", v.Local.sInvoice, v.Local.sSQL)
+'		f.Data.DataTable.CreateFromSQL("commDT", "con", v.Local.sSQL, true)
+		
+		f.Intrinsic.String.Build("Select Distinct A.Order_Line, A.Order_No, A.Line_No, B.Invoice, B.Date_Invoice as INVOICE_DATE, B.Extension as INVOICE_AMT, A.Identifier, A.Salesperson, A.Rate, A.GSS_USER, A.LAST_DATE From GCG_5645_PRE_COMM A Inner Join V_Order_Hist_Line B on A.Order_No = B.Order_No and A.Line_No = B.Order_Line where B.Invoice = '{0}' and A.Rate <> '0.00';", v.Local.sInvoice, v.Local.sSQL)
+		f.Data.DataTable.CreateFromSQL("commDT", "con", v.Local.sSQL, true)
+		
+		f.Data.DataTable.AddColumn("commDT", "Vendor", "String")
+		f.Data.DataTable.AddColumn("commDT", "PL", "String")
+		
+		f.Data.Dictionary.CreateFromSQL("vendorDict1", "con", "Select SP_ID, SP_VENDOR from GCG_5645_OVR_RATES")
+		f.Data.Dictionary.CreateFromSQL("plDict", "con", "Select Order_No+'-'+Order_Line as OrderLine, Product_Line from V_Order_Hist_Line")
+	f.ODBC.Connection!con.Close
+	
+	'Apply Dictionaries.
+	f.Data.Dictionary.SetDefaultReturn("vendorDict1", "  ")
+	f.Data.DataTable.FillFromDictionary("commDT", "vendorDict1", "Salesperson", "Vendor")
+	f.Data.Dictionary.Close("vendorDict1")
+	
+	f.Data.Dictionary.SetDefaultReturn("plDict", "  ")
+	f.Data.DataTable.FillFromDictionary("commDT", "plDict", "Order_Line", "PL")
+	f.Data.Dictionary.Close("plDict")
+
+	'Add Invoiced Flag to Pre-Comm
+	f.Data.DataTable.AddColumn("preCommDT", "Invoiced", "String", "Y")	
+	'Calculate Commissions based on rate from pre-commissions and the amunt invoiced from the Invoice record (To account for partial Invoices.)
+	f.Data.DataTable.AddExpressionColumn("commDT", "Comm_Total", "Float", "INVOICE_AMT*Rate")
+	'Cr4eate Unique IDENTFIERS.
+	f.Data.DataTable.SetSeries("commDT", "Identifier", 0, 1)
+	'Call subroutine to create Accrual Record and PL Expenses 
+	'Save Commission Record (Flag)
+	f.ODBC.Connection!con.OpenCompanyConnection
+		'Save Flagged Pre_Commissions.
+	 	f.Data.DataTable.SaveToDB("preCommDT", "con", "GCG_5645_PRE_COMM", "Order_Line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate", 256)
+	 	'Save Commissions.
+	 	'Add Vendor Column for Key linkuing with AP_QUEUE.
+	 	'f.Data.DataTable.SaveToDB("commDT", "con", "GCG_5645_COMMISSIONS", "Order_Line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate*!*Vendor", 256)
+'	 	f.Data.DataTable.AddColumn("commDT", "INVOICE", "String", v.Local.sInvoice)
+'	 	f.Data.DataTable.AddColumn("commDT", "INVOICE_DATE", "String", v.Ambient.Date.PervasiveDate)
+	 	f.Data.DataTable.SaveToDB("commDT", "con", "GCG_5645_COMMISSIONS", "Order_Line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate*!*Vendor*!*INVOICE", 256)
+	f.ODBC.Connection!con.Close
+	f.Data.DataTable.Close("preCommDT")
+	f.Data.DataTable.Close("commDT")	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.createCommRecord.End
+
+Program.Sub.queueInvoice.Start
+v.Local.sSQL.Declare
+v.Local.sInvoice.Declare
+f.Intrinsic.Control.Try
+	'Get Invoice.
+	v.Local.sInvoice.Set(v.Passed.009000)
+'	v.Local.sInvoice.Set("000046")
+	'Get Commissions and Dictionaries
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Intrinsic.String.Build("Select Distinct A.Order_No, A.Line_No, B.Product_Line, A.Invoice, A.Invoice_Date, A.Salesperson as Vendor, A.Rate, A.Comm_total, A.IDENTIFIER from GCG_5645_COMMISSIONS A left Join V_Order_Hist_Line B on A.Order_No = B.Order_No and A.Line_No = B.Order_Line where A.Invoice = '{0}';", v.Local.sInvoice, v.Local.sSQL)	
+		f.Data.DataTable.CreateFromSQL("queueDT", "con", v.Local.sSQL)
+		f.Data.Dictionary.CreateFromSQL("vendorDict", "con", "Select SP_ID, SP_VENDOR from GCG_5645_OVR_RATES")
+	f.ODBC.Connection!con.Close
+	'Apply Dictionaries.
+	f.Data.Dictionary.SetDefaultReturn("vendorDict", "bn")
+	f.Data.DataTable.FillFromDictionary("queueDT", "vendorDict", "Vendor")
+	f.Data.Dictionary.Close("vendorDict")
+	'Add column to match DB
+	f.Data.DataTable.AddColumn("queueDT", "Processed", "String", "N", 1)
+	f.Data.DataTable.AddColumn("queueDT", "Type", "String", "IV", 2)
+	'Flag EMR 
+	f.Data.Dictionary.Create("emrDict")
+	f.Data.Dictionary.AddItem("emrDict", "101647", "PR")
+	f.Data.Dictionary.SetDefaultReturn("emrDict", "IV")
+	f.Data.DataTable.FillFromDictionary("queueDT", "emrDict", "Vendor", "Type")
+	f.Data.Dictionary.Close("emrDict")
+	'Save to DB
+	f.Data.DataTable.AcceptChanges("queueDT")
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Data.DataTable.SaveToDB("queueDT", "con", "GCG_5645_AP_QUEUE", "", 128,"Order_No@!@Order_No*!*Line_No@!@Line_No*!*Product_Line@!@Product_Line*!*Invoice@!@Invoice*!*Invoice_Date@!@Invoice_Date*!*Vendor@!@Vendor*!*Rate@!@Rate*!*Comm_Total@!@Comm_Total*!*Processed@!@Processed*!*Type@!@Type*!*IDENTIFIER@!@IDENTIFIER")
+	f.ODBC.Connection!con.Close
+	'Close DT.
+	f.Data.DataTable.Close("queueDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.queueInvoice.End
