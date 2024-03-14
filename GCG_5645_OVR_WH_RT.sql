@@ -1,0 +1,12 @@
+-- Begin Tables
+SET LEGACYTYPESALLOWED = ON;
+-- Begin Multi-Line Statement
+CREATE TABLE "GCG_5645_OVR_WH_RT" (
+ "LOCATIONID" CHAR(2),
+ "AGENCYID" CHAR(3),
+ "WAREHOUSERATE" NUMERIC(6,4),
+ "GSS_USER" CHAR(9),
+ "GSS_DATE" CHAR(10) );
+-- End Multi-Line Statement
+SET LEGACYTYPESALLOWED = OFF;
+-- End Tables
