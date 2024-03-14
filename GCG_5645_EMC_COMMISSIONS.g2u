@@ -1,0 +1,1249 @@
+Program.Sub.ScreenSU.Start
+Gui.F_Commissions..Create
+Gui.F_Commissions..Size(18255,10500)
+Gui.F_Commissions..MinX(0)
+Gui.F_Commissions..MinY(0)
+Gui.F_Commissions..Position(0,0)
+Gui.F_Commissions..BackColor(-2147483633)
+Gui.F_Commissions..MousePointer(0)
+Gui.F_Commissions..Event(UnLoad,F_Commissions_UnLoad)
+Gui.F_Commissions..ControlBox(False)
+Gui.F_Commissions..MaxButton(False)
+Gui.F_Commissions..MinButton(False)
+Gui.F_Commissions.frmDisplayGrid.Create(Frame)
+Gui.F_Commissions.frmDisplayGrid.Size(17880,9330)
+Gui.F_Commissions.frmDisplayGrid.Position(75,90)
+Gui.F_Commissions.frmDisplayGrid.Anchor(15)
+Gui.F_Commissions.GsGcDisplay.Create(GsGridControl)
+Gui.F_Commissions.GsGcDisplay.Size(17730,9090)
+Gui.F_Commissions.GsGcDisplay.Position(75,165)
+Gui.F_Commissions.GsGcDisplay.Parent("frmDisplayGrid")
+Gui.F_Commissions.GsGcDisplay.Anchor(15)
+Gui.F_Commissions.GsGcDisplay.Event(RowCellClick,GsGcDisplay_RowCellClick)
+Gui.F_Commissions.GsGcDisplay.Event(CellValueChanged,GsGcDisplay_CellValueChanged)
+Gui.F_Commissions.cmdSave.Create(Button)
+Gui.F_Commissions.cmdSave.Size(855,375)
+Gui.F_Commissions.cmdSave.Position(17055,9465)
+Gui.F_Commissions.cmdSave.Caption("Save")
+Gui.F_Commissions.cmdSave.Anchor(10)
+Gui.F_Commissions.cmdSave.Event(Click,cmdSave_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.External.Include.Library("UPLAPOP.lib")
+v.Global.sCurrentBatch.Declare
+v.Global.sCurrentInvoice.Declare
+v.Global.sGL_Lines.Declare
+v.Global.sText.Declare
+Program.Sub.Preflight.End
+
+'Alejandro Anazco Villarreal11930	
+'EMC Commission Mock Up
+'8/22/2019
+Program.Sub.Main.Start
+'Hooks
+'Order Entry 
+'11560 - Populate
+'11930 - Script 3
+v.Local.bRet.Declare
+
+f.Intrinsic.Control.Try	
+	f.Intrinsic.Control.SelectCase(v.Caller.Hook)
+		f.Intrinsic.Control.Case(11560)
+			v.Passed.000203.Set("Commissions")
+			
+			F.Global.Security.IsInGroup(V.Caller.User.Trim,"WAREHSE",V.Caller.CompanyCode,V.Local.bRet)
+			F.Intrinsic.Control.If(V.Local.bRet)
+				F.Intrinsic.UI.ChangeCallerProperty(V.passed.000203,"HIDE",1)
+			F.Intrinsic.Control.EndIf 
+
+		f.Intrinsic.Control.Case(11930)	
+			F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+			f.Intrinsic.Control.CallSub(createDisplayDT)
+			f.Intrinsic.Control.CallSub(loadGridProperties)
+
+			f.Intrinsic.Control.CallSub(fillDisplayDT)
+			'f.Intrinsic.Control.CallSub(checkInvoice)
+			gui.F_Commissions..Show
+			
+		f.Intrinsic.Control.Case(32117)
+		
+			gui.F_Commissions.cmdSave.Caption("Process")
+			f.Intrinsic.Control.CallSub(createDisplayDT)
+			f.Intrinsic.Control.CallSub(loadGridProperties)
+			
+			f.Intrinsic.Control.CallSub(fillDisplayCRDT)
+			gui.F_Commissions..Show
+			
+		f.Intrinsic.Control.Case(11869)		
+			f.Intrinsic.Control.CallSub(checkRecord)
+		
+		f.Intrinsic.Control.Case(11900)		
+		
+			f.Intrinsic.Control.If(v.Passed.000003.Trim, <>, "")
+				f.Intrinsic.Control.CallSub(checkRecord)
+			f.Intrinsic.Control.EndIf
+			
+		
+	f.Intrinsic.Control.EndSelect	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+gui.F_Commissions..Enabled(True)
+
+'Closes ODBC connection, default to connection : "con"
+f.Intrinsic.Control.If(v.ODBC!con.State, =, 1)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.EndIf
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_5645_EMC_COMMISSIONS.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.F_Commissions_UnLoad.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.F_Commissions_UnLoad.End
+
+Program.Sub.createDisplayDT.Start
+f.Intrinsic.Control.Try
+	f.Data.DataTable.Create("displayDT", true)
+	f.Data.DataView.Create("displayDT", "displayDV", 22)
+	f.Data.DataTable.AddColumn("displayDT", "Order_Line", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Order_No", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Record_No", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Ship_ID", "String")
+	f.Data.DataTable.AddColumn("displayDT", "PartRev", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Part", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Rev", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Description", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Salesperson_ID", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Name", "String")
+	f.Data.DataTable.AddColumn("displayDT", "Qty_Ordered", "Float")
+	f.Data.DataTable.AddColumn("displayDT", "Price", "Float")
+	f.Data.DataTable.AddColumn("displayDT", "Extension", "Float")
+	f.Data.DataTable.AddColumn("displayDT", "Add_SP", "String")
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Data.DataTable.CreateFromSQL("displayDT$commissionsDT", "con", "Select * From GCG_5645_PRE_COMM Where Order_no = '-1'", true)
+	f.ODBC.Connection!con.Close
+	
+	f.Data.DataTable.RemoveColumn("displayDT$commissionsDT", "COMM_TOTAL")
+	'f.Data.DataTable.Create("displayDT$commissionsDT", true)
+	f.Data.DataView.Create("displayDT$commissionsDT", "commissionsDV", 22)
+	f.Data.DataTable.AddColumn("displayDT$commissionsDT", "Salesperson_Name", "String")
+	f.Data.DataTable.AddColumn("displayDT$commissionsDT", "ChildExtension", "Float", 0.0)
+	f.Data.DataTable.AddExpressionColumn("displayDT$commissionsDT", "COMM_TOTAL", "Float", "ChildExtension*Rate")
+	f.Data.DataTable.AddColumn("displayDT$commissionsDT", "Delete_SP", "String")
+	
+	gui.F_Commissions.GsGcDisplay.AddGridviewFromDataview("displayGV", "displayDT", "displayDV")
+	gui.F_Commissions.GsGcDisplay.MainView("displayGV")
+	
+	gui.F_Commissions.GsGcDisplay.AddGridviewFromDataview("commissionsGV", "displayDT", "commissionsDV")
+	gui.F_Commissions.GsGcDisplay.AddRelation("displayGV", "commissionsGV", "Order_Line", "Order_Line", "commissionsRL")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.createDisplayDT.End
+
+Program.Sub.loadGridProperties.Start
+v.Local.iCnt.Declare
+v.Local.sFields.Declare
+f.Intrinsic.Control.Try
+	'Common Properties - Display
+	f.Intrinsic.String.Split(v.DataTable.displayDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Center")
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	'Specific Properties - Display 
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Order_Line", "Caption", " ")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Order_No", "Caption", "Order No")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Record_No", "Caption", "Record No")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Ship_ID", "Caption", "Ship ID")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Qty_Ordered", "Caption", "Qty")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Salesperson_ID", "Caption", "Salesperson")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Qty_Ordered", "CellHAlignment", "Far")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Price", "CellHAlignment", "Far")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Extension", "CellHAlignment", "Far")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Qty_Ordered", "DisplayCustomNumeric", "0.0")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Price", "DisplayCustomNumeric", "$#,###,###.00")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Extension", "DisplayCustomNumeric", "$#,###,###.00")
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Default", "CellHAlignment", "Center")
+	gui.F_Commissions.GsGcDisplay.ColumnEdit("displayGV", "Add_SP", "EditorButton", "Add SP")
+	
+	
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "PartRev", "Visible", False)
+	
+	v.Local.sFields.Redim(0, 0)
+	
+	'Common Properties - Commissions
+	f.Intrinsic.String.Split(v.DataTable.displayDT$commissionsDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Center")
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+		gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+
+	'Specific Properties - Commissions 
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Order_Line", "Caption", " ")
+'	'gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Delete_SP", "Caption", " ")
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Price", "ReadOnly", False)
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("displayGV", "Price", "AllowEdit", True)	
+''	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "ID", "ReadOnly", True)
+''	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "ID", "AllowEdit", False)	
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "ChildExtension", "Visible", False)
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "CellHAlignment", "Far")
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Total", "CellHAlignment", "Far")
+'	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Total", "VisibleIndex", "5")
+'	'gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Delete_SP", "VisibleIndex", "6")
+	
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Identifier", "ReadOnly", False)
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Identifier", "AllowEdit", True)	
+	
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "ReadOnly", False)
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "AllowEdit", True)	
+
+	gui.F_Commissions.GsGcDisplay.ColumnEdit("commissionsGV", "Delete_SP", "EditorButton", "Delete SP")
+
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "ChildExtension", "Visible", False)
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Order_Line", "Visible", False)
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "GSS_USER", "Visible", False)
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "LAST_DATE", "Visible", False)
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Identifier", "Visible", False)
+	
+	'gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Order_Line", "VisibleIndex", "0")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Order_No", "VisibleIndex", "0")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Line_No", "VisibleIndex", "1")
+	''gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Identifier", "VisibleIndex", "2")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Salesperson", "VisibleIndex", "2")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Salesperson_Name", "VisibleIndex", "3")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "VisibleIndex", "4")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Comm_total", "VisibleIndex", "5")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Delete_SP", "VisibleIndex", "6")
+	
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Order_Line", "Caption", "Order_Line")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Order_No", "Caption", "Order No")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Line_No", "Caption", "Record No")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Identifier", "Caption", "Identifier")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Salesperson", "Caption", "SP ID")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Salesperson_Name", "Caption", "Salesperson")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Comm_total", "Caption", "Commissions")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "Caption", "Rate")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Delete_SP", "Caption", "Delete SP")
+	
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "DisplayCustomNumeric", "##0.00%")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Comm_total", "DisplayCustomNumeric", "$#,###,###.00")	
+	
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Rate", "CellHAlignment", "Far")
+	gui.F_Commissions.GsGcDisplay.SetColumnProperty("commissionsGV", "Comm_total", "CellHAlignment", "Far")	
+	
+	
+	gui.F_Commissions.GsGcDisplay.ColumnEdit("commissionsGV", "Identifier", "Combobox", "CEOO*!*CEOD*!*TROO*!*TROD*!*EGEG")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadGridProperties.End
+
+Program.Sub.GsGcDisplay_RowCellClick.Start
+v.Local.sSQL.Declare
+v.Local.sColumn.Declare
+v.Local.sReturn.Declare
+v.Local.sOrder.Declare
+v.Local.sLine_No.Declare
+v.Local.sOrder_Line.Declare
+v.Local.sFilter.Declare
+v.Local.fChildExtension.Declare
+v.Local.fSP_Rate.Declare
+
+v.Local.sIdentifier.Declare
+v.Local.sSP.Declare
+'v.Local.
+f.Intrinsic.Control.Try
+	v.Local.sColumn.Set(v.Args.Column)
+
+	
+	f.Intrinsic.Control.SelectCase(v.Local.sColumn.UCase)
+		f.Intrinsic.Control.Case("SALESPERSON_ID")
+			f.Intrinsic.UI.set
+			f.ODBC.Connection!con.OpenCompanyConnection
+			 	f.Intrinsic.UI.Browser("Salespersons", "con", "Select ID, Name, Email From V_SALESPERSONS", "ID*!*Name*!*Email", "40*!*80*!*140", v.Local.sReturn)
+			f.ODBC.Connection!con.Close
+			
+			f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+				f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+				f.Data.DataTable.SetValue("displayDT$commissionsDT", v.Args.RowIndex, "ID", v.Local.sReturn(0), "Salesperson", v.Local.sReturn(1))
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.Case("SALESPERSON")
+			
+			f.ODBC.Connection!con.OpenCompanyConnection
+			 	f.Intrinsic.UI.Browser("Salespersons", "con", "Select ID, Name, Email From V_SALESPERSONS", "ID*!*Name*!*Email", "40*!*80*!*140", v.Local.sReturn)
+			f.ODBC.Connection!con.Close
+			
+			f.Intrinsic.Control.If(v.Local.sReturn.Trim, <>, "***CANCEL***")
+				f.Intrinsic.String.Split(v.Local.sReturn, "*!*", v.Local.sReturn)
+				
+				f.ODBC.Connection!con.OpenCompanyConnection				
+					f.Intrinsic.String.Build("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = '{0}'", v.Local.sReturn(0), v.Local.sSQL)				
+					f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fSP_Rate)
+				f.ODBC.Connection!con.Close
+				
+				f.Data.DataTable.SetValue("displayDT$commissionsDT", v.Args.RowIndex, "Salesperson", v.Local.sReturn(0), "Salesperson_Name", v.Local.sReturn(1), "Rate", v.Local.fSP_Rate)
+			f.Intrinsic.Control.EndIf	
+			
+		f.Intrinsic.Control.Case("ADD_SP")
+		
+			v.Local.sOrder.Set(v.DataTable.displayDT(v.Args.RowIndex).Order_No!FieldValTrim)
+			v.Local.sLine_No.Set(v.DataTable.displayDT(v.Args.RowIndex).Record_No!FieldValTrim)
+			v.Local.sOrder_Line.Set(v.DataTable.displayDT(v.Args.RowIndex).Order_Line!FieldValTrim)
+			v.Local.fChildExtension.Set(v.DataTable.displayDT(v.Args.RowIndex).Extension!FieldVal)
+			
+			f.ODBC.Connection!con.OpenCompanyConnection
+				f.Intrinsic.String.Build("Select top 1 Salesperson from V_ORDER_HEADER where ORDER_NO = '{0}'", v.Local.sOrder, v.Local.sSQL) 
+				f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP)
+				f.Intrinsic.String.Build("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = '{0}'", v.Local.sSP, v.Local.sSQL)
+				f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fSP_Rate)
+			f.ODBC.Connection!con.Close
+			
+			f.Intrinsic.String.RPad(v.DataTable.displayDT$commissionsDT.RowCount, "0", 4, v.Local.sIdentifier)
+			
+			f.Intrinsic.String.Build("Order_Line = '{0}'", v.Local.sOrder_Line.Trim, v.Local.sFilter)
+			f.Data.DataView.Create("displayDT$commissionsDT", "rowCountDV", 22, v.Local.sFilter, "")
+			
+			f.Intrinsic.Control.If(v.DataView.displayDT!rowCountDV.RowCount, <, 3)	
+				f.Intrinsic.String.RPad(v.DataView.displayDT!rowCountDV.RowCount, "0", 4, v.Local.sIdentifier)
+				f.Data.DataTable.AddRow("displayDT$commissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP.Trim, "Rate", v.Local.fSP_Rate, "Identifier", v.Local.sIdentifier, "Order_No", v.Local.sOrder, "Line_NO", v.Local.sLine_No, "ChildExtension", v.Local.fChildExtension, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+			f.Intrinsic.Control.Else
+				f.Intrinsic.UI.Msgbox("This Line already has 3 commission lines.")
+			f.Intrinsic.Control.EndIf
+			
+			f.Data.DataView.Close("displayDT$commissionsDT", "rowCountDV")
+			
+			gui.F_Commissions.GsGcDisplay.ExpandMasterRow("displayGV", v.Args.RowIndex)
+		f.Intrinsic.Control.Case("DELETE_SP")
+			f.Data.DataTable.DeleteRow("displayDT$commissionsDT", v.Args.RowIndex)
+	f.Intrinsic.Control.EndSelect
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.GsGcDisplay_RowCellClick.End
+
+Program.Sub.fillDisplayDT.Start
+'Passed Variables
+'Order Entry - Script 3
+'000003 = Order Num - Not Padded
+
+v.Local.sOrder_No.Declare
+v.Local.sLine_No.Declare
+v.local.sSQL.Declare
+v.Local.sOrder_Line.Declare
+v.Local.iCnt.Declare
+v.Local.sCaption.Declare
+v.Local.sSalesperson.Declare
+v.Local.sSP_ID_From_User.Declare
+v.Local.fSP_Rate.Declare
+v.Local.sCustomer.Declare
+v.Local.sLocation.Declare
+
+v.Local.f_Cust_Rate.Declare
+v.Local.f_WH_Rate.Declare
+v.Local.sSP_ID_From_CustMstr.Declare
+v.Local.sSP_ID_From_SO.Declare
+v.Local.fSP_SO_Rate.Declare
+v.Local.fStd_Rate.Declare
+
+v.Local.fStd_CEOO_Rate.Declare
+v.Local.fStd_CEOD_Rate.Declare
+v.Local.fStd_TROO_Rate.Declare
+v.Local.fStd_TRWO_Rate.Declare
+v.Local.fStd_TRWA_Rate.Declare
+v.Local.fStd_EGEG_Rate.Declare
+
+V.Local.sFilter.Declare(string)
+
+f.Intrinsic.Control.Try
+	'Get Sales order and set Form Caption.
+	f.Intrinsic.String.LPad(v.Passed.000003, "0", 7, v.Local.sOrder_No)
+	f.Intrinsic.String.Build("Sales Order: {0}", v.Local.sOrder_No, v.Local.sCaption)
+	gui.F_Commissions..Caption(v.Local.sCaption)
+	'v.Local.sOrder_No.Set("0000114")
+	
+	'SQL quieries, DTs and Dictionaries
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Intrinsic.String.Build("Select Order_No+'-'+Record_No as Order_Line, Order_No, Record_No, Ship_ID, Part as PartRev, Description, order_no as Salesperson_ID, '' as Name, Qty_Ordered, Price, Extension From V_Order_Lines where Order_No = '{0}' and Record_No <> '8000' order by order_no, record_no", v.Local.sOrder_No, v.Local.sSQL)
+		f.Data.DataTable.CreateFromSQL("tmpDisplayDT", "con", v.Local.sSQL, true)
+	
+		f.Intrinsic.String.Build("Select * From GCG_5645_PRE_COMM Where Order_No = '{0}' order by order_line", V.Local.sOrder_No, V.Local.sSQL)		
+		f.Data.DataTable.CreateFromSQL("tmpCommissionsDT", "con", v.Local.sSQL, true)
+		
+		f.Data.Dictionary.CreateFromSQL("salespersonID_Dict", "con", "Select Order_No, Salesperson From V_Order_Header")
+		f.Data.Dictionary.CreateFromSQL("salespersonName_Dict", "con", "Select ID, Name From V_SALESPERSONS")
+
+		'STD Rate
+		
+		'f.ODBC.Connection!con.ExecuteAndReturn("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = 'ZZZ'", v.Local.fStd_Rate)
+
+		'Rate from Customer (1st Line)
+		
+		f.Intrinsic.String.Build("Select Customer from V_Order_Header where Order_no = '{0}'", v.Local.sOrder_No, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sCustomer)
+		
+		f.Intrinsic.String.Build("Select Salesperson from V_CUSTOMER_MASTER where Customer = '{0}'", v.Local.sCustomer, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_CustMstr)
+		
+		f.Intrinsic.String.Build("Select CUST_RATE from GCG_5645_OVR_CUST_RT where CUST_SP_ID = '{0}'", v.Local.sSP_ID_From_CustMstr, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.f_Cust_Rate)
+		
+		f.Intrinsic.String.Build("Select Salesperson from V_ORDER_HEADER where ORDER_NO = '{0}'", v.Local.sOrder_No, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_SO)
+		
+		'Set the salesperson rate in case there is not a customer-specific rate stored
+		f.Intrinsic.String.Build("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = '{0}'",V.Local.sSP_ID_From_SO,V.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fStd_Rate)
+		
+		f.Intrinsic.Control.If(v.Local.f_Cust_Rate, =, 0)
+			v.Local.f_Cust_Rate.Set(v.Local.fStd_Rate)
+		f.Intrinsic.Control.EndIf
+		
+		'Rate from Location (2nd Line)
+		f.Intrinsic.String.Build("Select ORDER_LOCATION from V_Order_Header where Order_no = '{0}'", v.Local.sOrder_No, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sLocation)
+		
+		f.Intrinsic.String.Build("Select WAREHOUSERATE from GCG_5645_OVR_WH_RT where locationID = '{0}'", v.Local.sLocation, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.f_WH_Rate)
+		
+		f.Intrinsic.String.Build("Select AGENCYID from GCG_5645_OVR_WH_RT where LocationID = '{0}'", v.Local.sLocation, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_User)
+		
+	'Add Pre commission table.
+	'Add User's Rate/
+	'	f.Intrinsic.String.Build("Select SP_ID, SP_Rate")
+	f.ODBC.Connection!con.Close
+	
+	f.Data.DataTable.AddDisplayPartColumn("tmpDisplayDT", 0, "PartRev", "Part","Rev")
+	
+	'If there were any saved pre-commissions records found, add any lines that have not been saved to the grid
+	f.Intrinsic.Control.If(v.DataTable.tmpCommissionsDT.RowCount,>,0)
+	'Commented For loop and if statement, now the program will not create automated standard records if there is at least one record in table.
+	
+'	'Do noothing
+		f.Data.Dataview.Create("tmpCommissionsDT","tmpCommissionsDV",22)
+		f.Data.DataView.ToDataTableDistinct("tmpCommissionsDT","tmpCommissionsDV","commLinesDT","ORDER_LINE")
+		
+		f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.commlinesDT.RowCount--,1)
+			f.Intrinsic.Control.If(v.Local.sFilter,!=,"")
+				f.Intrinsic.String.Build("{0},",v.Local.sFilter,v.Local.sFilter)
+			F.Intrinsic.Control.EndIf
+			f.Intrinsic.String.Build("{0}'{1}'",v.Local.sFilter,v.DataTable.commlinesDT(v.Local.iCnt).ORDER_LINE!FIELDVAL,v.Local.sFilter)
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+		
+		'Reset the count in case the next loop is needed
+		v.Local.iCnt.Set(0)
+		f.Intrinsic.Control.If(v.Local.sFilter,!=,"")
+			f.Intrinsic.String.Build("ORDER_LINE NOT IN ({0})",V.Local.sFilter,V.Local.sFilter)
+			f.Data.DataView.Create("tmpDisplayDT","tmpDisplayDV",22,v.Local.sFilter,"")
+			
+			f.Intrinsic.Control.If(v.DataView.tmpDisplayDT!tmpDisplayDV.RowCount,>,0)
+				f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataView.tmpDisplayDT!tmpDisplayDV.RowCount--,1)
+					v.Local.sOrder_Line.Set(v.dataview.tmpDisplayDT!tmpDisplayDV(v.Local.iCnt).Order_Line!FieldValTrim)
+					v.Local.sLine_No.Set(v.dataview.tmpDisplayDT!tmpDisplayDV(v.Local.iCnt).Record_No!FieldValTrim)	
+					'Display the salesperson line first
+					f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_SO, "Rate", v.Local.f_Cust_Rate, "Identifier", "CEOD", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+					'Display warehouse line second, even if the WH rate is 0
+					f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_User, "Rate", v.Local.f_WH_Rate, "Identifier", "CEOO", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+				f.Intrinsic.Control.Next(v.Local.iCnt)
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.EndIf
+		
+		f.data.DataTable.Close("commLinesDT")
+		f.Data.DataView.Close("tmpDisplayDT","tmpDisplayDV")
+		f.Data.DataView.Close("tmpCommissionsDT","tmpCommissionsDV")
+	f.Intrinsic.Control.else
+	'If Empty Let the User Know
+	f.Intrinsic.String.Build("{0} - Commission Records Not Saved.", v.Local.sCaption, v.Local.sCaption)
+	gui.F_Commissions..Caption(v.Local.sCaption)
+	'If empty add 3 Rows.		
+		f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.tmpDisplayDT.RowCount--, 1)
+			v.Local.sOrder_Line.Set(v.DataTable.tmpDisplayDT(v.Local.iCnt).Order_Line!FieldValTrim)
+			v.Local.sLine_No.Set(v.DataTable.tmpDisplayDT(v.Local.iCnt).Record_No!FieldValTrim)	
+			'Display the salesperson line first
+			f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_SO, "Rate", v.Local.f_Cust_Rate, "Identifier", "CEOD", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+			'Display warehouse line second, even if the WH rate is 0
+			f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_User, "Rate", v.Local.f_WH_Rate, "Identifier", "CEOO", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+		'f.Intrinsic.UI.Msgbox("Commission Records Shown are not saved.")
+	f.Intrinsic.Control.EndIf
+
+	'Salesperson ID dictionary
+	f.Data.Dictionary.SetDefaultReturn("salespersonID_Dict", " ")
+	f.Data.DataTable.FillFromDictionary("tmpDisplayDT", "salespersonID_Dict", "Salesperson_ID")
+	f.Data.Dictionary.Close("salespersonID_Dict")
+	'Salesperson Name dictionary
+	f.Data.DataTable.AddColumn("tmpCommissionsDT", "Salesperson_Name", "String")
+	f.Data.Dictionary.SetDefaultReturn("salespersonName_Dict", " ")
+	f.Data.DataTable.FillFromDictionary("tmpCommissionsDT", "salespersonName_Dict", "Salesperson" ,"Salesperson_Name")
+	'f.Data.Dictionary.Close("salespersonName_Dict")
+	
+	'Salesperson Name dictionary
+	f.Data.Dictionary.SetDefaultReturn("salespersonName_Dict", " ")
+	f.Data.DataTable.FillFromDictionary("tmpDisplayDT", "salespersonName_Dict", "Salesperson_ID" ,"Name")
+	f.Data.Dictionary.Close("salespersonName_Dict")
+	
+	'Qty Dictionary
+	f.Data.DataTable.AddColumn("tmpCommissionsDT", "ChildExtension", "Float", 0.0)
+	f.Data.Dictionary.CreateFromDataTable("extensionDict", "tmpDisplayDT", "Order_Line", "Extension")
+	f.Data.Dictionary.SetDefaultReturn("extensionDict", 0.0)
+	f.Data.DataTable.FillFromDictionary("tmpCommissionsDT", "extensionDict", "Order_Line", "ChildExtension")
+	f.Data.Dictionary.Close("extensionDict")
+	
+	'Order the records in the temp commissions DT
+	f.Data.DataView.Create("tmpCommissionsDT","tmpCommissionsDV",22,"","ORDER_LINE,IDENTIFIER")
+	F.Data.DataView.ToDataTable("tmpCommissionsDT","tmpCommissionsDV","tmpCommSortedDT")
+	
+	'Merge tmpDisplay into Display
+	f.Data.DataTable.DeleteRow("displayDT")
+	f.Data.DataTable.AcceptChanges("displayDT")
+	f.Data.DataTable.Merge("tmpDisplayDT", "displayDT", false, 2)
+	f.Data.DataTable.Close("tmpDisplayDT")
+	'Merge tmpCommissions into Commissions
+	f.Data.DataTable.DeleteRow("displayDT$commissionsDT")
+	f.Data.DataTable.AcceptChanges("displayDT$commissionsDT")
+	f.Data.DataTable.Merge("tmpCommSortedDT", "displayDT$commissionsDT", false, 2)
+	f.Data.DataView.Close("tmpCommissionsDT","tmpCommissionsDV")
+	f.Data.DataTable.Close("tmpCommissionsDT")
+	f.Data.DataTable.Close("tmpCommSortedDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.fillDisplayDT.End
+
+Program.Sub.getListPrice.Start
+v.Local.sOrder.Declare
+v.Local.sLine.Declare
+v.Local.sPart.Declare
+v.Local.fListPrice.Declare
+v.Local.fOrderLineExt.Declare
+v.Local.fPriceGain.Declare
+v.Local.fQty.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	v.Local.sOrder.Set(v.Args.passedOrder)
+	v.Local.sLine.Set(v.Args.passedLine)
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.String.Build("Select Part from V_Order_Lines where Order_no = '{0}' and Record_No = '{1}'", v.Local.sOrder, v.Local.sLine, v.Local.sSQL)
+	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sPart)
+	 	
+	 	f.Intrinsic.String.Build("Select Extension from V_Order_Lines where Order_no = '{0}' and Record_No = '{1}'", v.Local.sOrder, v.Local.sLine, v.Local.sSQL)
+	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fOrderLineExt)
+	 	
+	 	f.Intrinsic.String.Build("Select Qty_Ordered from V_Order_Lines where Order_no = '{0}' and Record_No = '{1}'", v.Local.sOrder, v.Local.sLine, v.Local.sSQL)
+	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fQty)
+	 	
+	 	f.Intrinsic.String.Build("Select AMT_PRICE from V_INVENTORY_MSTR where Part = '{0}'", v.Local.sPart, v.Local.sSQL)
+	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fListPrice)
+	f.ODBC.Connection!con.Close
+	
+	f.Intrinsic.Math.Mult(v.Local.fQty, v.Local.fListPrice, v.Local.fListPrice)
+	f.Intrinsic.Math.Sub(v.Local.fOrderLineExt, v.Local.fListPrice, v.Local.fPriceGain)
+	
+	f.Data.DataTable.SetValue("displayDT$commissionsDT", v.Args.passedRowIndex, "ChildExtension", v.Local.fPriceGain)
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getListPrice.End
+
+Program.Sub.GsGcDisplay_CellValueChanged.Start
+v.Local.sOrder.Declare
+v.Local.sLine.Declare
+v.Local.sColumn.Declare
+v.Local.sCellValue.Declare
+v.Local.sFilter.Declare
+v.Local.fExtentions.Declare
+f.Intrinsic.Control.Try
+	v.Local.sColumn.Set(v.Args.Column)
+	f.Intrinsic.String.UCase(v.Local.sColumn, v.Local.sColumn)
+	f.Intrinsic.String.Trim(v.Local.sColumn, v.Local.sColumn)
+
+	f.Intrinsic.Control.SelectCase(v.Local.sColumn)
+		f.Intrinsic.Control.Case("IDENTIFIER")
+
+		v.Local.sCellValue.Set(v.DataTable.displayDT$commissionsDT(v.Args.RowIndex).Identifier!FieldValTrim)
+		v.Local.sOrder.Set(v.DataTable.displayDT$commissionsDT(v.Args.RowIndex).Order_No!FieldValTrim)
+		v.Local.sLine.Set(v.DataTable.displayDT$commissionsDT(v.Args.RowIndex).Line_No!FieldValTrim)
+		
+		f.Intrinsic.String.UCase(v.Local.sCellValue, v.Local.sCellValue)
+		f.Intrinsic.String.Trim(v.Local.sCellValue, v.Local.sCellValue)
+		
+		f.Intrinsic.Control.If(v.Local.sCellValue.Trim, =, "EGEG")
+			f.Intrinsic.Control.CallSub("getListPrice", passedRowIndex, v.Args.RowIndex, passedOrder, v.Local.sOrder, passedLine, v.Local.sLine)
+		f.Intrinsic.Control.Else
+			f.Intrinsic.String.Build("Record_No = '{0}'", v.Local.sLine, v.Local.sFilter)
+			f.Data.DataView.Create("displayDT", "extensionDV", 22, v.Local.sFilter, "")
+			f.Intrinsic.Control.If(v.DataView.displayDT!extensionDV.RowCount, =, 1)
+				v.Local.fExtentions.Set(v.DataView.displayDT!extensionDV(0).Extension!FieldValTrim)
+				f.Data.DataTable.SetValue("displayDT$commissionsDT", v.Args.RowIndex, "ChildExtension", v.Local.fExtentions)
+			f.Intrinsic.Control.EndIf
+			f.Data.DataView.Close("displayDT", "extensionDV")
+		f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.EndSelect
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.GsGcDisplay_CellValueChanged.End
+
+Program.Sub.cmdSave_Click.Start
+v.Local.sCaption.Declare
+v.Local.sInvoice.Declare
+v.Local.sSQL.Declare
+v.Local.iCnt.Declare
+v.Local.sPL.Declare
+v.Local.sGLAccount1.Declare
+v.Local.sGLAccount2.Declare
+v.Local.sGLAccount3.Declare
+v.Local.fCommTotal.Declare
+v.Local.sVendor.Declare
+v.Local.sFilePathUpLoad.Declare
+v.Local.iLine.Declare
+v.Local.sBatchLine.Declare
+v.Local.sCreditMemo.Declare
+v.Local.sDate.Declare
+v.Local.sTemp.Declare
+f.Intrinsic.Control.Try
+	v.Local.sCaption.Set(v.Screen.F_Commissions.Caption!FieldValTrim)
+'Function.Intrinsic.Debug.InvokeDebugger
+'Function.Intrinsic.Debug.Stop
+
+	gui.F_Commissions..Caption("Saving")
+	gui.F_Commissions..Enabled(False)
+	
+	f.Intrinsic.Control.If(v.Caller.Hook, =, 32117)
+		v.Local.sCreditMemo.Set("Y")
+	f.Intrinsic.Control.Else
+		v.Local.sCreditMemo.Set("N")
+	f.Intrinsic.Control.EndIf
+	
+	f.Data.DataTable.AcceptChanges("displayDT$commissionsDT")
+	'f.Data.DataView.Create("displayDT$commissionsDT", "SaveDV", 22, "Rate <> 0.0", "")
+	f.Data.DataView.Create("displayDT$commissionsDT", "SaveDV",  22,  "",  "")
+	
+	f.Data.DataView.ToDataTableDistinct("displayDT", "SaveDV", "saveDT", "Order_line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate*!*Comm_Total*!*GSS_USER*!*LAST_DATE*!*INVOICED*!*CREDIT_MEMO")
+	f.Data.DataView.Close("displayDT$commissionsDT", "SaveDV")
+	
+	f.Data.DataTable.SetValue("saveDT", -1, "CREDIT_MEMO", v.Local.sCreditMemo, "INVOICED", "N")
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	'f.Data.DataTable.SaveToDB("saveDT", "con", "GCG_5645_PRE_COMM", "Order_line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate*!*Comm_Total*!*GSS_USER*!*LAST_DATE", 256)
+	 	f.Data.DataTable.SaveToDB("saveDT", "con", "GCG_5645_PRE_COMM", "Order_line*!*Order_No*!*Line_No*!*Identifier*!*INVOICED*!*CREDIT_MEMO", 256)
+	f.ODBC.Connection!con.Close
+	
+	'f.Data.DataTable.Close("saveDT")
+	
+	f.Intrinsic.Control.If(v.Caller.Hook, =, 32117)
+	
+	'Get Today's date in a String.
+		f.Intrinsic.String.Format(v.Ambient.Date, "MMDDYY", v.Local.sDate)
+		
+		v.Local.sInvoice.Set(v.Passed.000107)
+		f.ODBC.Connection!con.OpenCompanyConnection
+		 	f.Data.DataTable.CreateFromSQL("finalCom", "con", "Select * from GCG_5645_COMMISSIONS where ORDER_LINE = '-1'", true)
+		 	f.Intrinsic.String.Build( "Select Order_Line, Product_Line from V_ORDER_HIST_LINE where INVOICE = '{0}'", v.Local.sInvoice, v.Local.sSQL)
+		 	f.Data.Dictionary.CreateFromSQL("plDict", "con", v.Local.sSQL)
+		 	f.Data.Dictionary.CreateFromSQL("vendorDict1", "con", "Select SP_ID, SP_VENDOR from GCG_5645_OVR_RATES")
+		 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'ACGL'", v.Local.sGLAccount1)
+		 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'APGL'", v.Local.sGLAccount3)
+		 	f.Data.Dictionary.CreateFromDataTable("extensionDict", "displayDT", "ORDER_LINE", "Extension")
+		f.ODBC.Connection!con.Close
+		
+		f.Data.DataTable.DeleteRow("finalCom")
+		f.Data.DataTable.AcceptChanges("finalCom")
+		f.Data.DataTable.Merge("saveDT", "finalCom", false, 2)
+		
+		f.Data.Dictionary.SetDefaultReturn("plDict", "  ")
+		f.Data.DataTable.FillFromDictionary("finalCom", "plDict", "Line_No", "PL")
+		f.Data.Dictionary.Close("plDict")
+		
+		f.Data.Dictionary.SetDefaultReturn("vendorDict1", "  ")
+		f.Data.DataTable.FillFromDictionary("finalCom", "vendorDict1", "Salesperson", "Vendor")
+		f.Data.Dictionary.Close("vendorDict1")
+	
+		f.Data.Dictionary.SetDefaultReturn("extensionDict", "0.0")
+		f.Data.DataTable.FillFromDictionary("finalCom", "extensionDict", "ORDER_LINE", "INVOICE_AMT")
+		f.Data.Dictionary.Close("extensionDict")
+'		
+		'Add Credit Memo
+		f.Data.DataTable.SetValue("finalCom", -1, "INVOICE", v.Local.sInvoice, "INVOICE_DATE", v.Ambient.Date.PSQLFriendly, "INV_PAYMENT_DATE", v.Ambient.Date.PSQLFriendly, "IDENTIFIER", "CRMM")		
+		
+		f.Intrinsic.Control.If(v.DataTable.finalCom.RowCount--, >, 999)
+			f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.finalCom.RowCount--, 1)
+				f.Intrinsic.String.Build("C{0}", v.Local.iCnt, v.Local.sTemp)
+				f.Data.DataTable.SetValue("finalCom", v.Local.iCnt, "IDENTIFIER", v.Local.sTemp)
+			f.Intrinsic.Control.Next(v.Local.iCnt)		
+		f.Intrinsic.Control.EndIf		
+		
+		f.Data.DataTable.AcceptChanges("finalCom")
+		
+		f.Intrinsic.Control.CallSub(getNextBatch)
+		
+		f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.finalCom.RowCount--, 1)
+			v.Local.sVendor.Set(v.DataTable.finalCom(v.Local.iCnt).Vendor!FieldValTrim)
+			v.Local.sPL.Set(v.DataTable.finalCom(v.Local.iCnt).PL!FieldValTrim)
+			
+			f.ODBC.Connection!con.OpenCompanyConnection
+	 	 	f.Intrinsic.String.Build("Select glAccount from GCG_5645_GL_ACCNTS where product_Line  = '{0}' and  systemGL = 'PLGL'", v.Local.sPL, v.Local.sSQL)
+	 	 		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sGLAccount2)
+			f.ODBC.Connection!con.Close
+		
+			f.Intrinsic.Control.If(v.Local.sGLAccount2.Trim, <>, "")
+				v.Local.fCommTotal.Set(0)
+				v.Local.fCommTotal.Set(v.DataTable.finalCom(v.Local.iCnt).Comm_Total!FieldVal)
+				
+				f.Intrinsic.Control.If(v.Local.fCommTotal, <>, 0)
+				
+					'Get AP upload line.
+					f.Intrinsic.Math.Add(v.Local.iCnt, 1, v.Local.iLine)
+					f.Intrinsic.String.LPad(v.Local.iLine, "0", 3, v.Local.sBatchLine)
+					'f.Intrinsic.String.Format(v.DataTable.finalCom(v.Local.iCnt).Invoice_Date!FieldValTrim, "MMDDYY", v.Local.sInvDate)
+					
+					
+					
+					f.Intrinsic.Control.If(v.Local.sVendor, =, "101647")
+					
+						v.Local.sGLAccount2.Set("6200.700.07.04")
+						v.Local.sGLAccount1.Set("2281.010.00.00")
+						
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount1, passedTransType, "07", passedMult, -1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Ambient.Date.PSQLFriendly, passedAmount, v.Local.fCommTotal, passedInvDate, v.Ambient.Date.PSQLFriendly, passedVendor, v.Local.sVendor, passedInvoice, "")
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount2, passedTransType, "07", passedMult, 1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Ambient.Date.PSQLFriendly, passedAmount, v.Local.fCommTotal, passedInvDate,v.Ambient.Date.PSQLFriendly, passedVendor, v.Local.sVendor, passedInvoice, "")
+						
+					
+					f.Intrinsic.Control.Else
+						'Get Next AP Invoice.
+						f.Intrinsic.Control.CallSub(getNextInv)
+						f.Data.DataTable.AddRow("UPLAPOP", "VendorNum", v.Local.sVendor, "InvoiceNum", v.Global.sCurrentInvoice, "TransCode", "10", "BatchNum", v.Global.sCurrentBatch, "BatchLine", v.Local.sBatchLine, "BatchDate", v.Local.sDate, "InvoiceDate", v.Local.sDate,"InvoiceAmount", v.Local.fCommTotal, "InvoiceDueDate", v.Local.sDate, "RecordAmount", v.Local.fCommTotal, "CurrExchangeCode", "USD")
+						
+						'New GL Allocations:
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount1, passedTransType, "07", passedMult, -1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Ambient.Date.PSQLFriendly, passedAmount, v.Local.fCommTotal, passedInvDate, v.Ambient.Date.PSQLFriendly, passedVendor, v.Local.sVendor, passedInvoice, "")
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount2, passedTransType, "07", passedMult, 1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Ambient.Date.PSQLFriendly, passedAmount, v.Local.fCommTotal, passedInvDate,v.Ambient.Date.PSQLFriendly, passedVendor, v.Local.sVendor, passedInvoice, "")
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount1, passedTransType, "07", passedMult, 1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Ambient.Date.PSQLFriendly, passedAmount, v.Local.fCommTotal, passedInvDate, v.Ambient.Date.PSQLFriendly, passedVendor, v.Local.sVendor, passedInvoice, v.Global.sCurrentInvoice)
+						'add GL Account to GL LINE
+						f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount3, passedTransType, "07", passedMult, -1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Ambient.Date.PSQLFriendly, passedAmount, v.Local.fCommTotal, passedInvDate,v.Ambient.Date.PSQLFriendly, passedVendor, v.Local.sVendor, passedInvoice, v.Global.sCurrentInvoice)
+					f.Intrinsic.Control.EndIf
+						
+					'Save Batch Numbers and Batch Invoices.
+					
+					f.Data.DataTable.SetValue("finalCom", v.Local.iCnt, "AP_Batch", v.Global.sCurrentBatch, "FLG_INV_PAID", "Y", "FLG_COM_PAYABLE", "Y", "FLG_COM_2B_PAID", v.Global.sCurrentInvoice, "COMM_BATCH", v.Global.sCurrentBatch, "FLG_COM_PAID", v.Ambient.Date.PSQLFriendly)
+	'					f.Data.DataTable.SetValue("finalCom", v.Local.iCnt, "AP_Batch", v.Global.sCurrentBatch)
+	'					f.Data.DataView.SetValue("queueDT", "queueDV", v.Local.iCnt ,"AP_Batch", v.Global.sCurrentBatch)
+	'					f.Data.DataView.SetValue("queueDT", "queueDV", v.Local.iCnt, "Processed", "Y")
+	
+					f.Intrinsic.Control.EndIf
+			f.Intrinsic.Control.EndIf		
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+		
+		f.Intrinsic.Control.If(v.DataTable.UPLAPOP.RowCount, >, 0)
+			f.Intrinsic.Control.CallSub(UPLAPOPSync)
+		f.Intrinsic.Control.EndIf
+			
+		f.Intrinsic.String.Build("{0}\GLDETAIL.TXT", v.Caller.FilesDir, v.Local.sFilePathUpLoad)
+		f.Intrinsic.File.String2File(v.Local.sFilePathUpLoad, v.Global.sGL_Lines)
+		
+		f.Global.General.CallWrapperSync(50, "UPLGDETL/U")
+	
+		f.ODBC.Connection!con.OpenCompanyConnection
+		 	f.Data.DataTable.SaveToDB("finalCom", "con", "GCG_5645_COMMISSIONS", "Order_No*!*Line_No*!*Invoice*!*Vendor*!*IDENTIFIER*!*Rate", 256)
+		f.ODBC.Connection!con.Close
+		
+		f.Intrinsic.Control.End
+	f.Intrinsic.Control.EndIf
+	
+	gui.F_Commissions..Caption(v.Local.sCaption)
+	gui.F_Commissions..Enabled(True)
+	
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.checkInvoice.Start
+'Passed Variables
+'Order Entry - Script 3
+'000003 = Order Num - Not Padded
+
+v.Local.sOrderNo.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get a list of all lines. for this order.
+	f.Intrinsic.String.LPad(v.Passed.000003, "0", 7, v.Local.sOrder_No)
+	'Get all Invoices from order_hist_head for this order
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.String.Build("Select  Order_No+Order_Line as KeyValue, 'Y' as Flg_Invoiced from V_ORDER_HIST_LINE where Order_No = '{0}' and Invoice <> ''", v.Local.sOrderNo, v.Local.sSQL)
+	 	f.Data.Dictionary.CreateFromSQL("incoicedDict", "con", v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+	'Compare order lines with invoices lines.
+	
+	'Flag pre_commision as invoiced whetre needed.
+	'Create Commision Records.
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.checkInvoice.End
+
+Program.Sub.fillDisplayCRDT.Start
+'Passed Variables
+'Order Entry - Script 3
+'Credit Memo: 000107
+v.Local.sInvoice.Declare
+v.Local.sOrder_No.Declare
+v.Local.sLine_No.Declare
+v.local.sSQL.Declare
+v.Local.sOrder_Line.Declare
+v.Local.iCnt.Declare
+v.Local.sCaption.Declare
+v.Local.sSalesperson.Declare
+v.Local.sSP_ID_From_User.Declare
+v.Local.fSP_Rate.Declare
+v.Local.sCustomer.Declare
+v.Local.sLocation.Declare
+
+v.Local.f_Cust_Rate.Declare
+v.Local.f_WH_Rate.Declare
+v.Local.sSP_ID_From_CustMstr.Declare
+v.Local.sSP_ID_From_SO.Declare
+v.Local.fSP_SO_Rate.Declare
+v.Local.fStd_Rate.Declare
+
+v.Local.fStd_CEOO_Rate.Declare
+v.Local.fStd_CEOD_Rate.Declare
+v.Local.fStd_TROO_Rate.Declare
+v.Local.fStd_TRWO_Rate.Declare
+v.Local.fStd_TRWA_Rate.Declare
+v.Local.fStd_EGEG_Rate.Declare
+
+V.Local.sFilter.Declare(string)
+
+f.Intrinsic.Control.Try
+	'Get Sales order and set Form Caption.
+	f.Intrinsic.String.LPad(v.Passed.000107, "0", 6, v.Local.sInvoice)
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.Intrinsic.String.Build("Select top 1 Order_No from V_ORDER_HIST_HEAD where Invoice = '{0}'", v.Local.sInvoice, v.Local.sSQL)
+	 	f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sOrder_No)
+	f.ODBC.Connection!con.Close
+	f.Intrinsic.String.Build("Sales Order: {0}", v.Local.sOrder_No, v.Local.sCaption)
+	gui.F_Commissions..Caption(v.Local.sCaption)
+	'v.Local.sOrder_No.Set("0000114")
+	
+	'SQL quieries, DTs and Dictionaries
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Intrinsic.String.Build("Select Order_No+'-'+Order_Line as Order_Line, Order_No, Order_Line as Record_No, CUSTOMER_SHIP  as Ship_ID, Part as PartRev, Description, order_no as Salesperson_ID, '' as Name, Qty_Shipped as Qty_Ordered, Price, Extension From V_Order_Hist_Line where invoice = '{0}' order by invoice, record_no", v.Local.sInvoice, v.Local.sSQL)
+		f.Data.DataTable.CreateFromSQL("tmpDisplayDT", "con", v.Local.sSQL, true)
+	
+		f.Intrinsic.String.Build("Select * From GCG_5645_PRE_COMM Where Order_No = '{0}' and Invoiced = 'Y' and Credit_Memo = 'N' order by order_line", V.Local.sOrder_No, V.Local.sSQL)		
+		f.Data.DataTable.CreateFromSQL("tmpCommissionsDT", "con", v.Local.sSQL, true)
+		
+		f.Data.Dictionary.CreateFromSQL("salespersonID_Dict", "con", "Select Order_No, SALESMAN From V_Order_Hist_Head")
+		f.Data.Dictionary.CreateFromSQL("salespersonName_Dict", "con", "Select ID, Name From V_SALESPERSONS")
+
+		'STD Rate
+		
+		'f.ODBC.Connection!con.ExecuteAndReturn("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = 'ZZZ'", v.Local.fStd_Rate)
+
+		'Rate from Customer (1st Line)
+		
+		f.Intrinsic.String.Build("Select Customer from V_Order_Hist_Head where Invoice = '{0}'", v.Local.sInvoice, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sCustomer)
+		
+		f.Intrinsic.String.Build("Select Salesperson from V_CUSTOMER_MASTER where Customer = '{0}'", v.Local.sCustomer, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_CustMstr)
+		
+		f.Intrinsic.String.Build("Select CUST_RATE from GCG_5645_OVR_CUST_RT where CUST_SP_ID = '{0}'", v.Local.sSP_ID_From_CustMstr, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.f_Cust_Rate)
+		
+		f.Intrinsic.String.Build("Select top 1 SALESMAN from V_Order_Hist_Head where Invoice = '{0}'", v.Local.sInvoice, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_SO)
+		
+		'Set the salesperson rate in case there is not a customer-specific rate stored
+		f.Intrinsic.String.Build("Select SP_RATE from GCG_5645_OVR_RATES where SP_ID = '{0}'",V.Local.sSP_ID_From_SO,V.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.fStd_Rate)
+		
+		f.Intrinsic.Control.If(v.Local.f_Cust_Rate, =, 0)
+			v.Local.f_Cust_Rate.Set(v.Local.fStd_Rate)
+		f.Intrinsic.Control.EndIf
+		
+		'Rate from Location (2nd Line)
+		f.Intrinsic.String.Build("Select LOCATION from V_Order_Hist_Head where Invoice = '{0}'", v.Local.sInvoice, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sLocation)
+		
+		f.Intrinsic.String.Build("Select WAREHOUSERATE from GCG_5645_OVR_WH_RT where locationID = '{0}'", v.Local.sLocation, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.f_WH_Rate)
+		
+		f.Intrinsic.String.Build("Select AGENCYID from GCG_5645_OVR_WH_RT where LocationID = '{0}'", v.Local.sLocation, v.Local.sSQL)
+		f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_User)
+		
+	'Add Pre commission table.
+	'Add User's Rate/
+	'	f.Intrinsic.String.Build("Select SP_ID, SP_Rate")
+	f.ODBC.Connection!con.Close
+	
+	f.Data.DataTable.AddDisplayPartColumn("tmpDisplayDT", 0, "PartRev", "Part","Rev")
+	
+	'If there were any saved pre-commissions records found, add any lines that have not been saved to the grid
+	f.Intrinsic.Control.If(v.DataTable.tmpCommissionsDT.RowCount,>,0)
+		f.Data.Dataview.Create("tmpCommissionsDT","tmpCommissionsDV",22)
+		f.Data.DataView.ToDataTableDistinct("tmpCommissionsDT","tmpCommissionsDV","commLinesDT","ORDER_LINE")
+		f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataTable.commlinesDT.RowCount--,1)
+			f.Intrinsic.Control.If(v.Local.sFilter,!=,"")
+				f.Intrinsic.String.Build("{0},",v.Local.sFilter,v.Local.sFilter)
+			F.Intrinsic.Control.EndIf
+			f.Intrinsic.String.Build("{0}'{1}'",v.Local.sFilter,v.DataTable.commlinesDT(v.Local.iCnt).ORDER_LINE!FIELDVAL,v.Local.sFilter)
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+		
+		'Reset the count in case the next loop is needed
+		v.Local.iCnt.Set(0)
+		f.Intrinsic.Control.If(v.Local.sFilter,!=,"")
+
+'			f.ODBC.Connection!con.OpenCompanyConnection
+'				f.Intrinsic.String.Build("Select Order_Line, Order_No, Line_No, Identifier, Salesperson, Rate From GCG_5645_PRE_COMM Where Order_No = '{0}' and Invoiced = 'N' and Credit_Memo = 'Y' order by order_line", V.Local.sOrder_No, V.Local.sSQL)		
+'				f.Data.DataTable.CreateFromSQL("dataCommissionsDT", "con", v.Local.sSQL, true)
+'			f.ODBC.Connection!con.Close
+'			
+'			f.Data.DataTable.DeleteRow("tmpCommissionsDT")
+'			f.Data.DataTable.AcceptChanges("tmpCommissionsDT")
+'			f.Data.DataTable.Merge("dataCommissionsDT", "tmpCommissionsDT", false, 2)
+'			f.Data.DataTable.AcceptChanges("tmpCommissionsDT")
+'			f.Data.DataTable.Close("dataCommissionsDT")
+'			
+			f.Data.DataTable.SetValue("tmpCommissionsDT", -1, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate, "INVOICED", "N", "CREDIT_MEMO", "Y")
+			f.Intrinsic.String.Build("ORDER_LINE NOT IN ({0})",V.Local.sFilter,V.Local.sFilter)
+			f.Data.DataView.Create("tmpDisplayDT","tmpDisplayDV",22,v.Local.sFilter,"")
+			
+			f.Intrinsic.Control.If(v.DataView.tmpDisplayDT!tmpDisplayDV.RowCount, >, 0)
+				f.Intrinsic.Control.For(v.Local.iCnt,0,v.DataView.tmpDisplayDT!tmpDisplayDV.RowCount--,1)
+					v.Local.sOrder_Line.Set(v.dataview.tmpDisplayDT!tmpDisplayDV(v.Local.iCnt).Order_Line!FieldValTrim)
+					v.Local.sLine_No.Set(v.dataview.tmpDisplayDT!tmpDisplayDV(v.Local.iCnt).Record_No!FieldValTrim)	
+					
+					f.Intrinsic.String.Build("Select SALESMAN from V_Order_Hist_Head where Invoice = '{0}' AND ", v.Local.sInvoice, v.Local.sSQL)
+					f.ODBC.Connection!con.ExecuteAndReturn(v.Local.sSQL, v.Local.sSP_ID_From_SO)
+		
+					'Display the salesperson line first
+					f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_SO, "Rate", v.Local.f_Cust_Rate, "Identifier", "CEOD", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+					'Display warehouse line second, even if the WH rate is 0
+					f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_User, "Rate", v.Local.f_WH_Rate, "Identifier", "CEOO", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate)
+				f.Intrinsic.Control.Next(v.Local.iCnt)
+			f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.EndIf
+		
+		f.data.DataTable.Close("commLinesDT")
+		f.Data.DataView.Close("tmpDisplayDT","tmpDisplayDV")
+		f.Data.DataView.Close("tmpCommissionsDT","tmpCommissionsDV")
+	f.Intrinsic.Control.else
+	'If empty add 3 Rows.		
+		f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.tmpDisplayDT.RowCount--, 1)
+			v.Local.sOrder_Line.Set(v.DataTable.tmpDisplayDT(v.Local.iCnt).Order_Line!FieldValTrim)
+			v.Local.sLine_No.Set(v.DataTable.tmpDisplayDT(v.Local.iCnt).Record_No!FieldValTrim)	
+			'Display the salesperson line first
+			f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_SO, "Rate", v.Local.f_Cust_Rate, "Identifier", "CEOD", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate, "INVOICED", "N", "Credit_Memo", "Y")
+			'Display warehouse line second, even if the WH rate is 0
+			f.Data.DataTable.AddRow("tmpCommissionsDT", "Order_Line", v.Local.sOrder_Line, "Salesperson", v.Local.sSP_ID_From_User, "Rate", v.Local.f_WH_Rate, "Identifier", "CEOO", "Order_No", v.Local.sOrder_No, "Line_NO", v.Local.sLine_No, "gss_user", v.Caller.User, "last_Date", v.Ambient.Date.PervasiveDate, "INVOICED", "N", "Credit_Memo", "Y")
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+	f.Intrinsic.Control.EndIf
+
+	'Salesperson ID dictionary
+	f.Data.Dictionary.SetDefaultReturn("salespersonID_Dict", " ")
+	f.Data.DataTable.FillFromDictionary("tmpDisplayDT", "salespersonID_Dict", "Salesperson_ID")
+	f.Data.Dictionary.Close("salespersonID_Dict")
+	'Salesperson Name dictionary
+	f.Data.DataTable.AddColumn("tmpCommissionsDT", "Salesperson_Name", "String")
+	f.Data.Dictionary.SetDefaultReturn("salespersonName_Dict", " ")
+	f.Data.DataTable.FillFromDictionary("tmpCommissionsDT", "salespersonName_Dict", "Salesperson" ,"Salesperson_Name")
+	'f.Data.Dictionary.Close("salespersonName_Dict")
+	
+	'Salesperson Name dictionary
+	f.Data.Dictionary.SetDefaultReturn("salespersonName_Dict", " ")
+	f.Data.DataTable.FillFromDictionary("tmpDisplayDT", "salespersonName_Dict", "Salesperson_ID" ,"Name")
+	f.Data.Dictionary.Close("salespersonName_Dict")
+	
+	'Qty Dictionary
+	f.Data.DataTable.AddColumn("tmpCommissionsDT", "ChildExtension", "Float", 0.0)
+	f.Data.Dictionary.CreateFromDataTable("extensionDict", "tmpDisplayDT", "Order_Line", "Extension")
+	f.Data.Dictionary.SetDefaultReturn("extensionDict", 0.0)
+	f.Data.DataTable.FillFromDictionary("tmpCommissionsDT", "extensionDict", "Order_Line", "ChildExtension")
+	f.Data.Dictionary.Close("extensionDict")
+	
+	'Order the records in the temp commissions DT
+	f.Data.DataView.Create("tmpCommissionsDT","tmpCommissionsDV",22,"","ORDER_LINE,IDENTIFIER")
+	F.Data.DataView.ToDataTable("tmpCommissionsDT","tmpCommissionsDV","tmpCommSortedDT")
+	
+	'Merge tmpDisplay into Display
+	f.Data.DataTable.DeleteRow("displayDT")
+	f.Data.DataTable.AcceptChanges("displayDT")
+	f.Data.DataTable.Merge("tmpDisplayDT", "displayDT", false, 2)
+	f.Data.DataTable.Close("tmpDisplayDT")
+	'Merge tmpCommissions into Commissions
+	f.Data.DataTable.DeleteRow("displayDT$commissionsDT")
+	f.Data.DataTable.AcceptChanges("displayDT$commissionsDT")
+	f.Data.DataTable.Merge("tmpCommSortedDT", "displayDT$commissionsDT", false, 2)
+	f.Data.DataView.Close("tmpCommissionsDT","tmpCommissionsDV")
+	f.Data.DataTable.Close("tmpCommissionsDT")
+	f.Data.DataTable.Close("tmpCommSortedDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.fillDisplayCRDT.End
+
+Program.Sub.getNextBatch.Start
+v.Local.sBatch.Declare
+v.Local.iNumBatch.Declare
+v.Local.sTemp.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get Top Batch
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 AP_BATCH From GCG_5645_AP_INVBATCH order by AP_BATCH desc", v.Local.sBatch)
+	f.ODBC.Connection!con.Close
+	'Trim
+	f.Intrinsic.String.Trim(v.Local.sBatch, v.Local.sBatch)
+	'Check if it is empty
+	f.Intrinsic.Control.If(v.Local.sBatch, =, "")
+		'If Emptry, start with M0001
+		v.Local.sBatch.Set("O0001")
+	f.Intrinsic.Control.Else
+		'Get Next Batch.
+		f.Intrinsic.String.Right(v.Local.sBatch, 4, v.Local.sTemp)
+		v.Local.iNumBatch.Set(v.Local.sTemp)
+		f.Intrinsic.Math.Add(v.Local.iNumBatch, 1, v.Local.iNumBatch)
+		f.Intrinsic.String.LPad(v.Local.iNumBatch, "0", 4, v.Local.sTemp)
+		f.Intrinsic.String.Build("O{0}", v.Local.sTemp, v.Local.sBatch)
+	f.Intrinsic.Control.EndIf	
+	'Set batch to global variable.
+	v.Global.sCurrentBatch.Set(v.Local.sBatch)
+	f.Intrinsic.String.Build("Insert into  GCG_5645_AP_INVBATCH (AP_BATCH) Values ('{0}')", v.Global.sCurrentBatch, v.Local.sSQL)
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getNextBatch.End
+
+Program.Sub.getNextInv.Start
+v.Local.sInvoice.Declare
+v.Local.iNumInvoice.Declare
+v.Local.sTemp.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get Top Invoice
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 AP_INV From GCG_5645_AP_INVBATCH order by AP_INV desc", v.Local.sInvoice)
+	f.ODBC.Connection!con.Close
+	'Trim
+	f.Intrinsic.String.Trim(v.Local.sInvoice, v.Local.sInvoice)
+	'Check if it is empty
+	f.Intrinsic.Control.If(v.Local.sInvoice, =, "")
+		'If Emptry, start with M000001
+		v.Local.sInvoice.Set("O000001")
+	f.Intrinsic.Control.Else
+		'Get Next Invoice.
+		f.Intrinsic.String.Right(v.Local.sInvoice, 6, v.Local.sTemp)
+		v.Local.iNumInvoice.Set(v.Local.sTemp)
+		f.Intrinsic.Math.Add(v.Local.iNumInvoice, 1, v.Local.iNumInvoice)
+		f.Intrinsic.String.LPad(v.Local.iNumInvoice, "0", 6, v.Local.sTemp)
+		f.Intrinsic.String.Build("O{0}", v.Local.sTemp, v.Local.sInvoice)
+	f.Intrinsic.Control.EndIf	
+	'Set Invoice to global variable.
+	v.Global.sCurrentInvoice.Set(v.Local.sInvoice)
+	'Save Invoice.
+	f.Intrinsic.String.Build("Insert into  GCG_5645_AP_INVBATCH (AP_BATCH, AP_INV) Values ('{0}', '{1}')", v.Global.sCurrentBatch, v.Global.sCurrentInvoice, v.Local.sSQL)
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getNextInv.End
+
+Program.Sub.writeUPLGDETL_File.Start
+v.Local.sLine.Declare
+v.Local.iCnt.Declare
+v.Local.sTemp.Declare
+v.Local.sBatch.Declare
+v.Local.sBatchNumber.Declare
+v.Local.sEmpty.Declare
+v.Local.sGL_Account.Declare
+v.Local.sPostDate.Declare
+v.Local.iTerms.Declare
+v.Local.dTempDate.Declare(date)
+v.Local.sCustomer.Declare
+v.Local.sFilter.Declare
+v.Local.sTransactionType.Declare
+v.Local.bDateError.Declare
+v.Local.fAmount.Declare
+'v.Local.dTempDate.Declare
+f.Intrinsic.Control.Try	
+	v.Local.sGL_Account.Set(v.Args.passedGL)
+	v.Local.sTransactionType.Set(v.Args.passedTransType)
+	
+	'GL Account
+	f.Intrinsic.String.RPad(V.Local.sGL_Account, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Post Date 
+	v.Local.sEmpty.Set(v.Args.passedBatchDate)
+	f.Intrinsic.Date.ConvertDString(v.Local.sEmpty, "MM/DD/YYYY", v.Local.dTempDate)
+	f.Intrinsic.String.Format(v.Local.dTempDate, "YYYYMMDD", v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	'Transaction Batch Number
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Args.passedBatchNumber, v.Local.sLine)
+	'Transaction Batch Number
+	v.Local.sEmpty.Set("")
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 5, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Transaction Voucher Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Reference
+	'f.Intrinsic.Control.CallSub(addField, passedLenght, 15, passedRow, v.Local.iCnt, passedField, "Invoice_Number")
+	f.Intrinsic.String.RPad(v.Args.passedInvoice, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Amount
+	'f.Intrinsic.Control.CallSub(addLeftField, passedLenght, 16, passedRow, v.Local.iCnt, passedField, "Invoice_Total")
+	v.Local.fAmount.Set(v.Args.passedAmount)
+	f.Intrinsic.Math.Mult(v.Local.fAmount, v.Args.passedMult, v.Local.fAmount)
+	f.Intrinsic.String.LPad(v.Local.fAmount.String, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Description  
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 30, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Application Type
+	'f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 2, v.Local.sEmpty)
+	v.Local.sEmpty.Set("AP")
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Transaction Type
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sTransactionType, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Customer ID
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Vendor ID
+	f.Intrinsic.String.RPad(v.Args.passedVendor, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'PO Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Invoice Number
+	v.Local.sEmpty.Set(v.Global.sCurrentInvoice)
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+
+	'Invoice Date.
+	'Function.Intrinsic.Debug.Stop
+	v.Local.sEmpty.Set(v.Args.passedInvDate)
+	f.Intrinsic.Date.ConvertDString(v.Local.sEmpty, "MM/DD/YYYY", v.Local.dTempDate)
+	f.Intrinsic.String.Format(v.Local.dTempDate, "YYYYMMDD", v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	
+	'Invoice Due Date
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 8, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine,  v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check System
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 2, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 6, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Date
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 8, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Gross Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Discount Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 11, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Net Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")		
+
+
+	f.Intrinsic.Control.If(v.Global.[v.Args.GL_LINES], =, "")
+		v.Global.[v.Args.GL_LINES].Set(v.Local.sLine)
+	f.Intrinsic.Control.Else
+		f.Intrinsic.String.Build("{0}{1}{2}", v.Global.[v.Args.GL_LINES], v.Ambient.NewLine, v.Local.sLine, v.Global.[v.Args.GL_LINES])
+	f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.writeUPLGDETL_File.End
+
+Program.Sub.checkRecord.Start
+v.Local.sOrder.Declare
+v.Local.sSQL.Declare
+
+f.Intrinsic.Control.Try
+	v.Local.sOrder.Set(v.Passed.000003)
+	f.Intrinsic.String.LPad(v.Local.sOrder, "0", 7, v.Local.sOrder)
+	f.Intrinsic.String.Build("Select * From GCG_5645_PRE_COMM Where Order_No = '{0}' order by order_line", v.Local.sOrder, v.Local.sSQL)
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Data.DataTable.CreateFromSQL("checkDT", "con", v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+	
+	f.Intrinsic.Control.If(v.DataTable.checkDT.RowCount, =, 0)
+		'F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+		f.Intrinsic.Control.CallSub(createDisplayDT)
+		f.Intrinsic.Control.CallSub(loadGridProperties)
+	
+		f.Intrinsic.Control.CallSub(fillDisplayDT)
+		'f.Intrinsic.Control.CallSub(checkInvoice)
+		gui.F_Commissions..Show
+	f.Intrinsic.Control.EndIf
+	f.Data.DataTable.Close("checkDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.checkRecord.End
