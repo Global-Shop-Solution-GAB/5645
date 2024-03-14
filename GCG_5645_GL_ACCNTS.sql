@@ -1,0 +1,12 @@
+-- Begin Tables
+SET LEGACYTYPESALLOWED = ON;
+-- Begin Multi-Line Statement
+CREATE TABLE "GCG_5645_GL_ACCNTS" (
+ "PRODUCT_LINE" CHAR(2),
+ "GLACCOUNT" CHAR(15),
+ "SYSTEMGL" CHAR(4),
+ "GSS_USER" CHAR(9),
+ "LAST_SAVE" CHAR(10) );
+-- End Multi-Line Statement
+SET LEGACYTYPESALLOWED = OFF;
+-- End Tables
