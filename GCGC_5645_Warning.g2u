@@ -1,0 +1,34 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+v.Local.sRet.Declare
+
+f.Intrinsic.Control.Try
+
+	f.Intrinsic.UI.Msgbox("Please Remember to add Commissions Records. Do you wish to continue saving?", "Commissions Records", 4, v.Local.sRet)
+	
+	f.Intrinsic.Control.If(v.Local.sRet, =, "7")
+		v.Passed.777777.Set(1)
+	f.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.Control.If(v.Local.sRet, =, "6")
+		
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Closes ODBC connection, default to connection : "con"
+f.Intrinsic.Control.If(v.ODBC!con.State, =, 1)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.EndIf
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCGC_5645_Warning.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
