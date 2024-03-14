@@ -1,0 +1,1206 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Size(14490,9840)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form..Caption("Commission's Dashboard")
+Gui.Form.tab1.Create(Tab)
+Gui.Form.tab1.Size(14145,9015)
+Gui.Form.tab1.Position(75,105)
+Gui.Form.tab1.Anchor(15)
+Gui.Form.tab1.Tabs(3)
+Gui.Form.tab1.SetTab(0)
+Gui.Form.tab1.Caption("Edit")
+Gui.Form.tab1.SetTab(1)
+Gui.Form.tab1.Caption("View")
+Gui.Form.tab1.SetTab(2)
+Gui.Form.tab1.Caption("Payroll")
+Gui.Form.cmd_Pay.Create(Button)
+Gui.Form.cmd_Pay.Size(1560,375)
+Gui.Form.cmd_Pay.Position(12450,90)
+Gui.Form.cmd_Pay.Parent("tab1",0)
+Gui.Form.cmd_Pay.Caption("Pay Commissions ")
+Gui.Form.cmd_Pay.Event(Click,cmd_Pay_Click)
+Gui.Form.cmd_Pay.Anchor(9)
+Gui.Form.cmd_Pay.Enabled(False)
+Gui.Form.cmd_Refresh.Create(Button)
+Gui.Form.cmd_Refresh.Size(855,375)
+Gui.Form.cmd_Refresh.Position(11445,90)
+Gui.Form.cmd_Refresh.Parent("tab1",0)
+Gui.Form.cmd_Refresh.Caption("Refresh")
+Gui.Form.cmd_Refresh.Event(Click,cmd_Refresh_Click)
+Gui.Form.cmd_Refresh.Anchor(9)
+Gui.Form.progressBar1.Create(ProgressBar)
+Gui.Form.progressBar1.Size(3735,255)
+Gui.Form.progressBar1.Position(2085,180)
+Gui.Form.progressBar1.Parent("tab1",0)
+Gui.Form.progressBar1.Visible(False)
+Gui.Form.lbl1.Create(Label,"Label",False,1875,255,0,75,240,True,1,"Arial",8,-2147483633,0)
+Gui.Form.lbl1.Parent("tab1",0)
+Gui.Form.gsgcView.Create(GsGridControl)
+Gui.Form.gsgcView.Size(13950,7560)
+Gui.Form.gsgcView.Position(30,975)
+Gui.Form.gsgcView.Parent("tab1",1)
+Gui.Form.gsgcView.Anchor(15)
+Gui.Form.txt1.Create(TextBox,"",False,1020,300,0,7800,420,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txt1.Parent("tab1",1)
+Gui.Form.lbl2.Create(Label,"Salesperson/Agency",False,1935,255,0,7770,150,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl2.Parent("tab1",1)
+Gui.Form.dtp1.Create(DatePicker)
+Gui.Form.dtp1.Size(1935,285)
+Gui.Form.dtp1.Position(105,495)
+Gui.Form.dtp1.Parent("tab1",1)
+Gui.Form.gsgcEdit.Create(GsGridControl)
+Gui.Form.gsgcEdit.Size(13950,7950)
+Gui.Form.gsgcEdit.Position(45,600)
+Gui.Form.gsgcEdit.Parent("tab1",0)
+Gui.Form.gsgcEdit.Anchor(15)
+Gui.Form.cmd3.Create(Button)
+Gui.Form.cmd3.Size(435,375)
+Gui.Form.cmd3.Position(8910,390)
+Gui.Form.cmd3.Parent("tab1",1)
+Gui.Form.cmd3.Caption("^")
+Gui.Form.cmd3.Visible(False)
+Gui.Form.dtp2.Create(DatePicker)
+Gui.Form.dtp2.Size(1935,285)
+Gui.Form.dtp2.Position(2220,495)
+Gui.Form.dtp2.Parent("tab1",1)
+Gui.Form.lbl3.Create(Label,"Start Date",True,1935,255,0,105,225,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl3.Parent("tab1",1)
+Gui.Form.lbl4.Create(Label,"End Date",True,1935,255,0,2250,225,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl4.Parent("tab1",1)
+Gui.Form.cmdFilter.Create(Button)
+Gui.Form.cmdFilter.Size(855,375)
+Gui.Form.cmdFilter.Position(4260,450)
+Gui.Form.cmdFilter.Parent("tab1",1)
+Gui.Form.cmdFilter.Caption("Filter")
+Gui.Form.cmdFilter.Event(Click,cmdFilter_Click)
+Gui.Form.cmd_ExportEdit.Create(Button)
+Gui.Form.cmd_ExportEdit.Size(855,375)
+Gui.Form.cmd_ExportEdit.Position(10515,90)
+Gui.Form.cmd_ExportEdit.Parent("tab1",0)
+Gui.Form.cmd_ExportEdit.Caption("Export")
+Gui.Form.cmd_ExportEdit.Event(Click,cmd_ExportEdit_Click)
+Gui.Form.cmd_ExportEdit.Anchor(9)
+Gui.Form.cmdSelectPaid.Create(Button)
+Gui.Form.cmdSelectPaid.Size(1815,375)
+Gui.Form.cmdSelectPaid.Position(75,135)
+Gui.Form.cmdSelectPaid.Caption("Select Paid Invoices")
+Gui.Form.cmdSelectPaid.Event(Click,cmdSelectPaid_Click)
+Gui.Form.cmdSelectPaid.Parent("tab1",0)
+Gui.Form.GsGcPayroll.Create(GsGridControl)
+Gui.Form.GsGcPayroll.Size(13950,8010)
+Gui.Form.GsGcPayroll.Position(60,525)
+Gui.Form.GsGcPayroll.Parent("tab1",2)
+Gui.Form.GsGcPayroll.Anchor(15)
+Gui.Form.chkViewPaid.Create(CheckBox)
+Gui.Form.chkViewPaid.Size(1560,360)
+Gui.Form.chkViewPaid.Position(12390,330)
+Gui.Form.chkViewPaid.Parent("tab1",1)
+Gui.Form.chkViewPaid.Caption("View Only Paid")
+Gui.Form.chkViewPaid.Event(Click,chkViewPaid_Click)
+Gui.Form.chkViewPaid.Anchor(9)
+Gui.Form.cmdPayrollSelectAll.Create(Button)
+Gui.Form.cmdPayrollSelectAll.Size(1200,375)
+Gui.Form.cmdPayrollSelectAll.Position(90,90)
+Gui.Form.cmdPayrollSelectAll.Parent("tab1",2)
+Gui.Form.cmdPayrollSelectAll.Caption("Select All")
+Gui.Form.cmdPayrollSelectAll.Event(Click,cmdPayrollSelectAll_Click)
+Gui.Form.cmdPayrollPay.Create(Button)
+Gui.Form.cmdPayrollPay.Size(1170,375)
+Gui.Form.cmdPayrollPay.Position(3210,90)
+Gui.Form.cmdPayrollPay.Parent("tab1",2)
+Gui.Form.cmdPayrollPay.Caption("Mark as Paid")
+Gui.Form.cmdPayrollPay.Event(Click,cmdPayrollPay_Click)
+Gui.Form.cmdPayrollPay.Enabled(False)
+Gui.Form.cmdPR_Refresh.Create(Button)
+Gui.Form.cmdPR_Refresh.Size(855,375)
+Gui.Form.cmdPR_Refresh.Position(1350,90)
+Gui.Form.cmdPR_Refresh.Parent("tab1",2)
+Gui.Form.cmdPR_Refresh.Caption("Refresh")
+Gui.Form.cmdPR_Refresh.Event(Click,cmd_Refresh_Click)
+Gui.Form.cmdViewRefresh.Create(Button)
+Gui.Form.cmdViewRefresh.Size(855,375)
+Gui.Form.cmdViewRefresh.Position(5220,435)
+Gui.Form.cmdViewRefresh.Caption("Refresh")
+Gui.Form.cmdViewRefresh.Event(Click,cmd_Refresh_Click)
+Gui.Form.cmdViewRefresh.Parent("tab1",1)
+Gui.Form.cmdExportView.Create(Button)
+Gui.Form.cmdExportView.Size(855,375)
+Gui.Form.cmdExportView.Position(11445,330)
+Gui.Form.cmdExportView.Parent("tab1",1)
+Gui.Form.cmdExportView.Caption("Export")
+Gui.Form.cmdExportView.Event(Click,cmdExportView_Click)
+Gui.Form.cmdExportView.Anchor(9)
+Gui.Form.cmdExportPayroll.Create(Button)
+Gui.Form.cmdExportPayroll.Size(855,375)
+Gui.Form.cmdExportPayroll.Position(2295,90)
+Gui.Form.cmdExportPayroll.Parent("tab1",2)
+Gui.Form.cmdExportPayroll.Caption("Export")
+Gui.Form.cmdExportPayroll.Event(Click,cmdExportPayroll_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.External.Include.Library("UPLAPOP.lib")
+v.Global.sCurrentBatch.Declare
+v.Global.sCurrentInvoice.Declare(String, "               ")
+v.Global.sGL_Lines.Declare
+v.Global.sText.Declare
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: Alejandro Anazco V.
+'11/6/2019
+'Programmed for EMC
+'Purpose: Purpose
+f.Intrinsic.Control.Try
+
+	f.Intrinsic.Control.CallSub(createDisplayDT)
+	'f.Intrinsic.Control.CallSub(getPreCommissions)
+	f.Intrinsic.Control.CallSub(loadGridProperties)
+	f.Intrinsic.Control.CallSub(securityGroup)
+	gui.Form..Show
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Closes ODBC connection, default to connection : "con"
+f.Intrinsic.Control.If(v.ODBC!con.State, =, 1)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.EndIf
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_5645_Comm_Dash.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.createDisplayDT.Start
+v.Local.iCnt.Declare
+v.Local.sTmp.Declare
+v.Local.dTemp.Declare
+f.Intrinsic.Control.Try
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Data.DataTable.CreateFromSQL("editCommDT", "con", "Select * from GCG_5645_COMMISSIONS where FLG_COM_PAYABLE = 'Y' and ISNULL(FLG_COM_PAID, '') = '' and Vendor <> '101647'", true)	 
+		'f.Data.DataTable.CreateFromSQL("editCommDT", "con", "Select * from GCG_5645_COMMISSIONS where FLG_COM_PAID <> 'Y'", true)	 
+		'f.Data.DataTable.CreateFromSQL("editCommDT", "con", "Select * from GCG_5645_COMMISSIONS ", true)	 
+		f.Data.DataTable.CreateFromSQL("payrollCommDT", "con", "Select * from GCG_5645_COMMISSIONS where Vendor = '101647' ", true)	 
+		
+		f.Data.DataTable.AddColumn("editCommDT", "Customer", "String")
+		f.Data.DataTable.AddColumn("editCommDT", "CustomerName", "String")
+		f.Data.DataTable.AddColumn("editCommDT", "PoLine", "String")
+		
+		f.Data.DataTable.AddColumn("payrollCommDT", "Customer", "String")
+		f.Data.DataTable.AddColumn("payrollCommDT", "CustomerName", "String")
+		f.Data.DataTable.AddColumn("payrollCommDT", "PoLine", "String")
+		
+		'Adding Cash Receiots to check commissions eligiility.
+		f.Data.Dictionary.CreateFromSQL("crAmtDict", "con", "Select Invoice, Sum(AMT_Invoice) from AR_OPEN_ITEMS where Batch_Code = '11' group by invoice union Select Invoice, Sum(AMT_Invoice) from AR_History where Batch_Code = '11' group by invoice order by invoice asc ;")
+		f.Data.Dictionary.CreateFromSQL("crDateDict", "con", "Select Invoice, MAX(Date_Transaction) from V_AR_History where Batch_Code = '11' group by invoice Union Select distinct Invoice, MAX(Date_Transaction) from V_AR_OPEN_ITEMs where Batch_Code = '11' group by invoice;")
+		'f.Data.Dictionary.CreateFromSQL("invAmt", "con", "Select Invoice,  Amt_Trans_Total from AR_Open_Items where Batch_Code = '10'")
+		f.Data.Dictionary.CreateFromSQL("custNum", "con", "Select Order_No, CUSTOMER from Order_Hist_Head")
+		f.Data.Dictionary.CreateFromSQL("custName", "con", "Select Order_No, NAME_CUSTOMER from Order_Hist_Head")
+		f.Data.Dictionary.CreateFromSQL("custPo", "con", "Select Order_No, Customer_PO from Order_Hist_Head")
+		
+		f.Data.DataTable.CreateFromSQL("viewCommDT", "con", "Select * from GCG_5645_COMMISSIONS", true)	
+	f.ODBC.Connection!con.Close
+	
+	
+	f.Data.DataTable.AddColumn("viewCommDT", "filterDate", "Date")	
+	f.Data.DataTable.AddColumn("viewCommDT", "Customer", "String")
+	f.Data.DataTable.AddColumn("viewCommDT", "CustomerName", "String")
+	f.Data.DataTable.AddColumn("viewCommDT", "PoLine", "String")
+	f.Data.DataTable.AddColumn("viewCommDT", "amtTransaction", "Float")
+	f.Data.DataTable.AddColumn("viewCommDT", "dateTransaction", "String")
+	
+	'extra columns, select to pay and ar history data.
+	f.Data.DataTable.AddColumn("editCommDT", "select_to_Pay", "Boolean", False)
+	f.Data.DataTable.AddColumn("editCommDT", "amtTransaction", "Float")
+	f.Data.DataTable.AddColumn("editCommDT", "dateTransaction", "String")
+	'copy for payroll.
+	f.Data.DataTable.AddColumn("payrollCommDT", "select_to_Pay", "Boolean", False)
+	f.Data.DataTable.AddColumn("payrollCommDT", "amtTransaction", "Float")
+	f.Data.DataTable.AddColumn("payrollCommDT", "dateTransaction", "String")
+	'Fill form dictionary info of paid invoices
+	f.Data.Dictionary.SetDefaultReturn("custNum", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "custNum", "Order_No", "Customer")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "custNum", "Order_No", "Customer")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "custNum", "Order_No", "Customer")
+	f.Data.Dictionary.Close("custNum")
+	
+	f.Data.Dictionary.SetDefaultReturn("custName", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "custName", "Order_No", "CustomerName")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "custName", "Order_No", "CustomerName")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "custName", "Order_No", "CustomerName")
+	f.Data.Dictionary.Close("custName")
+	'Fill form dictionary info of paid invoices
+	f.Data.Dictionary.SetDefaultReturn("custPo", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "custPo", "Order_No", "PoLine")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "custPo", "Order_No", "PoLine")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "custPo", "Order_No", "PoLine")
+	f.Data.Dictionary.Close("custPo")
+	'Fill form dictionary info of paid invoices
+'	f.Data.Dictionary.SetDefaultReturn("invAmt", "0.0")
+'	f.Data.DataTable.FillFromDictionary("editCommDT", "invAmt", "Invoice", "Invoice_Amt")
+'	f.Data.Dictionary.Close("invAmt")
+	'Fill form dictionary info of paid invoices
+	f.Data.Dictionary.SetDefaultReturn("crAmtDict", "0.0")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "crAmtDict", "Invoice", "amtTransaction")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "crAmtDict", "Invoice", "amtTransaction")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "crAmtDict", "Invoice", "amtTransaction")
+	f.Data.Dictionary.Close("crAmtDict")
+	'Fill form dictionary info of paid invoices (Date)
+	f.Data.Dictionary.SetDefaultReturn("crDateDict", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "crDateDict", "Invoice", "dateTransaction")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "crDateDict", "Invoice", "dateTransaction")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "crDateDict", "Invoice", "dateTransaction")
+	f.Data.Dictionary.Close("crDateDict")
+
+	f.Data.DataTable.AddExpressionColumn("editCommDT", "checkPayment", "string", "IIF([invoice_amt] + [amtTransaction] = 0, '1', '0')")
+	f.Data.DataTable.AddExpressionColumn("payrollCommDT", "checkPayment", "string", "IIF([invoice_amt] + [amtTransaction] = 0, '1', '0')")
+'	f.Data.DataTable.AddExpressionColumn("editCommDT", "doubleInvAmt", "Float", "Convert(invoice_amt, 'Float'")
+'	f.Data.DataTable.AddExpressionColumn("editCommDT", "doubleCRAmt", "Float", "Convert(amtTransaction, 'Float'")
+	'f.Data.DataTable.AddExpressionColumn("editCommDT", "checkPayment", "string", "IIF([doubleInvAmt] + [doubleCRAmt] = 0, '1', '0')")
+	
+	f.Data.DataView.Create("editCommDT", "editCommDV", 22)
+	gui.Form.gsgcEdit.AddGridviewFromDataview("editCommGV", "editCommDT", "editCommDV")
+	gui.Form.gsgcEdit.MainView("editCommGV")
+	
+
+		
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.viewCommDT.RowCount--, 1)
+		v.Local.sTmp.Set(v.DataTable.viewCommDT(v.Local.iCnt).Invoice_Date!FieldValTrim)
+		f.Intrinsic.String.Split(v.Local.sTmp.Trim, " ", v.Local.sTmp)
+		
+		f.Intrinsic.Control.If(v.Local.sTmp(0).Trim, =, "")
+			f.Data.DataTable.SetValue("viewCommDT", v.Local.iCnt, "filterDate", "1900-01-01")
+		f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.If(v.Local.sTmp(0).IsDate)
+			f.Data.DataTable.SetValue("viewCommDT", v.Local.iCnt, "filterDate", v.Local.sTmp(0))	
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+
+	f.Data.DataView.Create("payrollCommDT", "payrollCommDV", 22)
+	gui.Form.GsGcPayroll.AddGridviewFromDataview("payrollCommGV", "payrollCommDT", "payrollCommDV")
+	gui.Form.GsGcPayroll.MainView("payrollCommGV")
+	
+	f.Data.DataView.Create("viewCommDT", "viewCommDV", 22)
+	gui.Form.gsgcView.AddGridviewFromDataview("viewCommGV", "viewCommDT", "viewCommDV")
+	gui.Form.gsgcView.MainView("viewCommGV")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.createDisplayDT.End
+
+Program.Sub.loadGridProperties.Start
+v.Local.iCnt.Declare
+v.Local.sFields.Declare
+v.Local.iIndex.Declare
+f.Intrinsic.Control.Try
+
+	f.Intrinsic.String.Split(v.DataTable.payrollCommDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Near")
+		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+'		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+'		gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	gui.Form.GsGcPayroll.SetGridviewProperty("payrollCommGV", "OptionsViewColumnAutoWidth", False)
+	gui.Form.GsGcPayroll.BestFitColumns("payrollCommGV")
+	
+	gui.Form.GsGcPayroll.SetGridviewProperty("payrollCommGV", "OptionsViewShowAutoFilterRow", True)
+	gui.Form.gsgcEdit.SetGridviewProperty("editCommGV", "OptionsViewShowAutoFilterRow", True)
+	gui.Form.gsgcView.SetGridviewProperty("viewCommGV", "OptionsViewShowAutoFilterRow", True)
+	'	select_to_Pay
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "select_to_Pay", "VisibleIndex", 0)
+	
+	
+	'Captions
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Flg_Com_2B_Paid", "Caption", "PAY")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Order_No", "Caption", "Order No")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Line_no", "Caption", "Line")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Invoice", "Caption", "Invoice")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Invoice_Date", "Caption", "Inv Date")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Salesperson", "Caption", "SP")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Vendor", "Caption", "Vendor")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Rate", "Caption", "Rate")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Comm_Total", "Caption", "Commission")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Inv_Payment_Date", "Caption", "Invoice Payment Date")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "AP_BATCH", "Caption", "Accrued Batch")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "COMM_BATCH", "Caption", "Commission Batch")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "FLG_COM_PAID", "Caption", "Commission Paid")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "FLG_INV_PAID", "Caption", "Invoice Paid")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "INVOICE_AMT", "Caption", "Invoice Amount")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Identifier", "Caption", "Identifier")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Order_Line", "Caption", "Order-Line")
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "CustomerName", "Caption", "Customer Name")
+	
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "select_to_Pay", "Caption", "SelectPay")
+	'Allow Edit
+'	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Flg_Com_2B_Paid", "ReadOnly", False)
+'	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Flg_Com_2B_Paid", "AllowEdit", True)
+	
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "select_to_Pay", "ReadOnly", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "select_to_Pay", "AllowEdit", True)
+	
+	'Visible
+	'gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Identifier", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "FLG_COM_PAID", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Flg_Com_Payable", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "GSS_USER", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Identifier", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Last_Date", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Inv_Payment_Date", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "FLG_INV_PAID", "Visible", False)
+	gui.Form.GsGcPayroll.SetColumnProperty("payrollCommGV", "Flg_Com_2B_Paid", "Visible", False)
+	
+	
+	'conditional formatting.
+
+	gui.Form.GsGcPayroll.AddStyleFormatCondition("payrollCommGV", "amtTransaction", "myTag2", "EQUAL", 0)
+	gui.Form.GsGcPayroll.SetStyleFormatConditionProperty("payrollCommGV", "amtTransaction", "myTag2", "ApplyToRow", True) 
+	gui.Form.GsGcPayroll.SetStyleFormatConditionProperty("payrollCommGV", "amtTransaction", "myTag2", "BackColor", "Red") 
+	
+	gui.Form.GsGcPayroll.AddSummaryItem("payrollCommGV", "Comm_Total", "PayrollTotal", "Sum", "")
+	
+	f.Intrinsic.String.Split(v.DataTable.editCommDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Near")
+		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+'		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+'		gui.Form.gsgcEdit.SetColumnProperty("editCommGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	'conditional formatting.
+	'gui.Form.gsgcEdit.AddStyleFormatCondition("editCommGV", "checkPayment", "myTag", "EQUAL", 1)
+	gui.Form.gsgcEdit.AddStyleFormatCondition("editCommGV", "amtTransaction", "myTag", "EQUAL", 0)
+	gui.Form.gsgcEdit.SetStyleFormatConditionProperty("editCommGV", "amtTransaction", "myTag", "ApplyToRow", True) 
+	gui.Form.gsgcEdit.SetStyleFormatConditionProperty("editCommGV", "amtTransaction", "myTag", "BackColor", "Red") 
+	
+	'Captions
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Flg_Com_2B_Paid", "Caption", "PAY")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Order_No", "Caption", "Order No")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Line_no", "Caption", "Line")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Invoice", "Caption", "Invoice")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Invoice_Date", "Caption", "Inv Date")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Salesperson", "Caption", "SP")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Vendor", "Caption", "Vendor")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Rate", "Caption", "Rate")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Comm_Total", "Caption", "Commission")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Inv_Payment_Date", "Caption", "Invoice Payment Date")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "AP_BATCH", "Caption", "Accrued Batch")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "COMM_BATCH", "Caption", "Commission Batch")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "FLG_COM_PAID", "Caption", "Commission Paid")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "FLG_INV_PAID", "Caption", "Invoice Paid")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "INVOICE_AMT", "Caption", "Invoice Amount")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Identifier", "Caption", "Identifier")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Order_Line", "Caption", "Order-Line")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "PoLine", "Caption", "PO Line")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "amtTransaction", "Caption", "Cash Receipt")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "dateTransaction", "Caption", "CR Date")
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "CustomerName", "Caption", "Customer Name")
+	
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "select_to_Pay", "Caption", "SelectPay")
+	
+		'	select_to_Pay
+	v.Local.iIndex.Set(0)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "select_to_Pay", "VisibleIndex", v.Local.iIndex)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Order_Line", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Order_No", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Line_no", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Invoice", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Invoice_Date", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Salesperson", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Rate", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Comm_Total", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "AP_BATCH", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "COMM_BATCH", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "INVOICE_AMT", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "amtTransaction", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "dateTransaction", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Vendor", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "PL", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Customer", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "PoLine", "VisibleIndex", v.Local.iIndex.++)
+
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "checkPayment", "Visible", False)
+	
+	'Allow Edit
+'	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Flg_Com_2B_Paid", "ReadOnly", False)
+'	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Flg_Com_2B_Paid", "AllowEdit", True)
+	
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "select_to_Pay", "ReadOnly", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "select_to_Pay", "AllowEdit", True)
+	
+	'Visible
+	'gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Identifier", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "FLG_COM_PAID", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Flg_Com_Payable", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "GSS_USER", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Identifier", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Last_Date", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Inv_Payment_Date", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "FLG_INV_PAID", "Visible", False)
+	gui.Form.gsgcEdit.SetColumnProperty("editCommGV", "Flg_Com_2B_Paid", "Visible", False)
+	
+	gui.Form.gsgcEdit.SetGridviewProperty("editCommGV", "OptionsViewColumnAutoWidth", False)
+	gui.Form.gsgcEdit.BestFitColumns("editCommGV")
+	gui.Form.gsgcEdit.AddSummaryItem("editCommGV", "Comm_Total", "editTotal", "Sum", "")
+	
+	f.Intrinsic.String.Split(v.DataTable.viewCommDT.FieldNames, "*!*", v.Local.sFields)
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.Local.sFields.UBound, 1)
+		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "HeaderFontBold", True)
+		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "Visible", True)
+		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "ReadOnly", True)
+		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "AllowEdit", False)
+		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "HeaderHAlignment", "Near")
+		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "CellHAlignment", "Near")
+'		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "HeaderBackColor", v.Color.GSS)
+'		gui.Form.gsgcView.SetColumnProperty("viewCommGV", v.Local.sFields(v.Local.iCnt), "HeaderForeColor", v.Color.White)
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	'Captions
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Flg_Com_2B_Paid", "Caption", "AP Voucher")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Order_No", "Caption", "Order No")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Line_no", "Caption", "Line")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Invoice", "Caption", "AR Invoice")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Invoice_Date", "Caption", "AR Inv Date")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "filterDate", "Caption", "AR Inv Date")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Salesperson", "Caption", "SP")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Vendor", "Caption", "Vendor")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Rate", "Caption", "Rate")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Comm_Total", "Caption", "Commission")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Inv_Payment_Date", "Caption", "AR Invoice Payment Date")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "AP_BATCH", "Caption", "Accrued Batch")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "COMM_BATCH", "Caption", "Commission Batch")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "FLG_COM_PAID", "Caption", "Commission Paid Date")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "FLG_INV_PAID", "Caption", "Invoice Paid")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "INVOICE_AMT", "Caption", "Invoice Amount")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Identifier", "Caption", "Identifier")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Order_Line", "Caption", "Order-Line")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "CustomerName", "Caption", "Customer Name")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "PoLine", "Caption", "PO Line")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "amtTransaction", "Caption", "Cash Receipt")
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "dateTransaction", "Caption", "CR Date")
+	
+	v.Local.iIndex.Set(0)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Order_Line", "VisibleIndex", v.Local.iIndex)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Order_No", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Line_no", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Invoice", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "filterDate", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Salesperson", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Rate", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Comm_Total", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "AP_BATCH", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "COMM_BATCH", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "INVOICE_AMT", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Vendor", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "PL", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Customer", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "PoLine", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "amtTransaction", "VisibleIndex", v.Local.iIndex.++)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "dateTransaction", "VisibleIndex", v.Local.iIndex.++)
+'	
+	gui.Form.gsgcView.AddSummaryItem("viewCommGV", "Comm_Total", "viewTotal", "Sum", "")
+	
+'	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "FLG_COM_PAID", "Visible", False)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Flg_Com_Payable", "Visible", False)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Invoice_Date", "Visible", False)
+'	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "GSS_USER", "Visible", False)
+'	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Identifier", "Visible", False)
+'	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Last_Date", "Visible", False)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Inv_Payment_Date", "Visible", False)
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "FLG_INV_PAID", "Visible", False)
+'	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "Flg_Com_2B_Paid", "Visible", False)
+'	
+	gui.Form.gsgcView.SetGridviewProperty("viewCommGV", "OptionsViewColumnAutoWidth", False)
+	
+	gui.Form.gsgcView.SetColumnProperty("viewCommGV", "filterDate", "DisplayCustomDatetime", "d")
+	
+	gui.Form.gsgcView.BestFitColumns("viewCommGV")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.loadGridProperties.End
+
+Program.Sub.getPreCommissions.Start
+'Gets all pre commissions that match at invoice record in History.
+'Flags those records as invoiced, and create the Commisions Records.
+f.Intrinsic.Control.Try	
+	f.ODBC.Connection!con.OpenCompanyConnection
+		'Get the Pre Commissions that are not flagged as invoiced that also match Invoice Records from Order_Hist_Line. To flag as Invoiced
+		f.Data.DataTable.CreateFromSQL("preCommDT", "con", "Select A.Order_Line, A.Order_No, A.Line_No, A.Identifier, A.Salesperson, A.Rate, A.Comm_Total From GCG_5645_PRE_COMM A Inner Join V_Order_Hist_Line B on A.Order_No = B.Order_No and A.Line_No = B.Order_Line where A.Invoiced <> 'Y';", true)
+		'Get the Pre Commissions that are not flagged as invoiced that also match Invoice Records from Order_Hist_Line to Use for Commission DT.
+		f.Data.DataTable.CreateFromSQL("commDT", "con", "Select A.Order_Line, A.Order_No, A.Line_No, B.Invoice, B.Date_Invoice, A.Identifier, A.Salesperson, A.Rate, A.Comm_Total, A.GSS_USER, A.LAST_DATE From GCG_5645_PRE_COMM A Inner Join V_Order_Hist_Line B on A.Order_No = B.Order_No and A.Line_No = B.Order_Line where A.Invoiced <> 'Y';")
+	f.ODBC.Connection!con.Close
+	'Add Invoiced Flag.
+	f.Data.DataTable.AddColumn("preCommDT", "Invoiced", "String", "Y")
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+		'Save Flagged Pre_Commissions.
+	 	f.Data.DataTable.SaveToDB("preCommDT", "con", "GCG_5645_PRE_COMM", "Order_Line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate*!*Comm_Total", 256)
+	 	'Save Commissions.
+	 	f.Data.DataTable.SaveToDB("commDT", "con", "GCG_5645_COMMISSIONS", "Order_Line*!*Order_No*!*Line_No*!*Identifier*!*Salesperson*!*Rate*!*Comm_Total", 256)
+	f.ODBC.Connection!con.Close
+	f.Data.DataTable.Close("preCommDT")
+	f.Data.DataTable.Close("commDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getPreCommissions.End
+
+Program.Sub.flag_Inv_Paid.Start
+'Loops Through all commissions where Flg_Inv_Paid is empty, Checks if invoice has been paid.
+'Batch Code 11 = Cash Receipt
+v.Local.iCnt.Declare
+v.Local.sInvoice.Declare
+v.Local.sSQL.Declare
+v.Local.dInvoice_Date.Declare
+v.Local.dPayment_Date.Declare
+v.Local.sPymnt_Date_String.Declare
+v.Local.sInvc_Date_String.Declare
+v.Local.iDayDiff.Declare
+v.Local.fPaymentAmt.Declare
+f.Intrinsic.Control.Try
+	'Get Tables.
+
+'	f.ODBC.Connection!con.OpenCompanyConnection
+'	 	f.Data.DataTable.CreateFromSQL("tmpFlgPayableDT", "con", "Select * from GCG_5645_COMMISSIONS where Flg_Inv_Paid <> 'Y' and INVOICE_DATE = ''")
+'	 	f.Data.DataTable.CreateFromSQL("tmpInvoicesDT", "con", "Select distinct Invoice, Invoice_Date from GCG_5645_COMMISSIONS where Flg_Inv_Paid <> 'Y'")
+'	f.ODBC.Connection!con.Close	
+	
+	'Dictionaries for Flags and Dates.
+	f.Data.Dictionary.Create("date_transactionDict")
+	f.Data.Dictionary.Create("flg_Com_PayableDict")
+	f.Data.Dictionary.Create("flg_Inv_paidDict")
+	f.Data.Dictionary.Create("flg_Inv_AmtDict")
+	
+	f.Data.DataView.ToDataTableDistinct("editCommDT", "editCommDV", "invoiceDT", "Invoice")
+	
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.invoiceDT.RowCount--, 1)
+		'Get Invoice.
+		v.Local.sInvoice.Set(v.DataTable.invoiceDT(v.Local.iCnt).Invoice!FieldValTrim)
+		'Get Record in AR History.
+		f.ODBC.Connection!con.OpenCompanyConnection
+		 	f.Intrinsic.String.Build("Select Invoice, Date_Transaction, Order_No, Order_Suffix, AMT_Trans_Total from AR_History where Invoice = '{0}' and Batch_Code = '11'", v.Local.sInvoice, v.Local.sSQL)
+		 	f.Data.DataTable.CreateFromSQL("tmpAR_HistDT", "con", v.Local.sSQL)
+		 	'Checl if Empty.
+		 	f.Intrinsic.Control.If(v.DataTable.tmpAR_HistDT.RowCount, =, 0)
+		 		f.Data.DataTable.Close("tmpAR_HistDT")
+		 		f.Intrinsic.String.Build("Select Invoice, Date_Transaction, Order_No, Order_Suffix, AMT_Trans_Total from AR_OPEN_ITEMS where Invoice = '{0}' and Batch_Code = '11'", v.Local.sInvoice, v.Local.sSQL)
+		 		f.Data.DataTable.CreateFromSQL("tmpAR_HistDT", "con", v.Local.sSQL)
+		 	f.Intrinsic.Control.EndIf
+		f.ODBC.Connection!con.Close
+		'Checks if a record exists.
+		f.Intrinsic.Control.If(v.DataTable.tmpAR_HistDT.RowCount, >, 0)	
+			v.Local.sPymnt_Date_String.Set(v.DataTable.tmpAR_HistDT(0).Date_Transaction!FieldValTrim)
+			f.Intrinsic.Control.If(v.Local.sPymnt_Date_String.Trim, <>, "000000")
+				f.Data.Dictionary.AddItem("date_transactionDict", v.Local.sInvoice, v.Local.sPymnt_Date_String)
+				f.Data.Dictionary.AddItem("flg_Inv_AmtDict", v.Local.sInvoice, v.Local.sPymnt_Date_String)
+				'Add to dictionary Invoice - Payment Date (TransactionDate)
+'				f.Intrinsic.String.Format(v.Local.sPymnt_Date_String, "mm/dd/yyyy", v.Local.sPymnt_Date_String)
+'				f.Data.Dictionary.AddItem("date_transactionDict", v.Local.sInvoice, v.Local.sPymnt_Date_String)
+'				'Calculate time between Payment and Invoice.
+'				f.Intrinsic.Date.ConvertDString(v.Local.sPymnt_Date_String, "mmddyy", v.Local.dPayment_Date)
+'				f.Intrinsic.Date.ConvertDString(v.Local.sInvc_Date_String, "mmddyyyy", v.Local.dInvoice_Date)
+'				'Diference between dates.
+'				f.Intrinsic.Date.DateDiff("d", v.Local.dPayment_Date, v.Local.dInvoice_Date, v.Local.iDayDiff)
+'				'If lower than 60, add it to the dictionary.
+'				f.Intrinsic.Control.If(v.Local.iDayDiff, <=, 60)
+					f.Data.Dictionary.AddItem("flg_Com_PayableDict", v.Local.sInvoice, "Y")
+'				f.Intrinsic.Control.EndIf
+				f.Data.Dictionary.AddItem("flg_Inv_paidDict", v.Local.sInvoice, "Y")
+			f.Intrinsic.Control.EndIf			
+		f.Intrinsic.Control.EndIf				
+		f.Data.DataTable.Close("tmpAR_HistDT")
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	'Apply Dictionaries to Datatable.
+	'Invoiced paid Flag.
+	f.Data.Dictionary.SetDefaultReturn("flg_Inv_paidDict", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "flg_Inv_paidDict", "Invoice", "flg_Inv_Paid")
+	f.Data.Dictionary.Close("flg_Inv_paidDict")
+	'Payment Date. (Transaction Date)
+	f.Data.Dictionary.SetDefaultReturn("date_transactionDict", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "date_transactionDict", "Invoice", "Inv_Payment_Date")
+	f.Data.Dictionary.Close("date_transactionDict")
+	'Payable Commission Flag.
+	f.Data.Dictionary.SetDefaultReturn("flg_Com_PayableDict", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "flg_Com_PayableDict", "Invoice", "flg_Com_Payable")
+	f.Data.Dictionary.Close("flg_Com_PayableDict")
+	
+	'Merge into Edit Table.
+'	f.Data.DataTable.DeleteRow("editCommDT")
+'	f.Data.DataTable.AcceptChanges("editCommDT")
+'	f.Data.DataTable.Merge("tmpFlgPayableDT", "editCommDT", false, 2)
+'	f.Data.DataTable.Close("tmpFlgPayableDT")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.flag_Inv_Paid.End
+
+Program.Sub.Form_UnLoad.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.End
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.cmd_Pay_Click.Start
+v.Local.iRet.Declare
+v.Local.sMsg.Declare
+v.Local.iCnt.Declare
+
+v.Local.sGLAccount1.Declare
+v.Local.sGLAccount2.Declare
+
+v.Local.sVendor.Declare
+v.Local.sDate.Declare
+v.Local.sPL.Declare
+ v.Local.iLine.Declare
+ v.Local.sBatchLine.Declare
+ v.Local.sInvDate.Declare
+ v.Local.fCommTotal.Declare
+ v.Local.sFilePathUpLoad.Declare
+ 
+ v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get Gl Accounts. Commissions table for Column Structure.
+	f.Intrinsic.UI.InvokeWaitDialog("Paying Commissions")
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'APGL'", v.Local.sGLAccount1)
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select glAccount from GCG_5645_GL_ACCNTS where systemGL = 'ACGL'", v.Local.sGLAccount2)
+	 	f.Data.DataTable.CreateFromSQL("payCommDT", "con", "Select * from GCG_5645_COMMISSIONS")
+	f.ODBC.Connection!con.Close
+	
+	f.Data.DataTable.DeleteRow("payCommDT")
+	f.Data.DataTable.AcceptChanges("payCommDT")
+	
+	'Get Selected Rows.
+	f.Data.DataView.Create("editCommDT", "paidCommDV", 22, "select_to_Pay = 'True'", "")
+	'Create temp table to hold selected rows
+	f.Data.DataView.ToDataTable("editCommDT", "paidCommDV", "payTempCommDT")
+	f.Data.DataTable.Merge("payTempCommDT", "payCommDT", false, 2)
+	f.Data.DataTable.AcceptChanges("payCommDT")
+	f.Data.DataTable.Close("payTempCommDT")
+	f.Data.DataView.Create("payCommDT", "payCommDV", 22)
+	'f.Data.DataTable.RemoveColumn("payCommDT", "select_to_Pay")
+	'f.Data.DataView.Close("editCommDT", "paidCommDV")
+	
+	'Build Confimation message
+	f.Intrinsic.String.Build("You are about Pay {0} records. Do you wish to continue?", v.DataTable.payCommDT.RowCount, v.Local.sMsg)
+	f.Intrinsic.UI.Msgbox(v.Local.sMsg, "Pay Confirmation", 3, v.Local.iRet)
+	
+	f.Intrinsic.Control.If(v.Local.iRet, =, 6)
+		'Get Next Batch Number
+		f.Intrinsic.Control.CallSub(getNextBatch)	
+		'Get Today's date in a String.
+		f.Intrinsic.String.Format(v.Ambient.Date, "MMDDYY", v.Local.sDate)
+	
+		'Go through the selected to pay commissions.
+		f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.payCommDT.RowCount--, 1)
+			'Creates a record per commissions.
+			v.Local.sVendor.Set(v.DataTable.payCommDT(v.Local.iCnt).Vendor!FieldValTrim)
+			v.Local.fCommTotal.Set(v.DataTable.payCommDT(v.Local.iCnt).Comm_Total!FieldVal)
+			
+			'Get AP upload line.
+			f.Intrinsic.Math.Add(v.Local.iCnt, 1, v.Local.iLine)
+			f.Intrinsic.String.LPad(v.Local.iLine, "0", 3, v.Local.sBatchLine)
+			f.Intrinsic.String.Format(v.DataTable.payCommDT(v.Local.iCnt).Invoice_Date!FieldValTrim, "MMDDYY", v.Local.sInvDate)
+			
+			'Get Next AP Invoice.
+			f.Intrinsic.Control.CallSub(getNextInv)
+			f.Data.DataTable.AddRow("UPLAPOP", "VendorNum", v.Local.sVendor, "InvoiceNum", v.Global.sCurrentInvoice, "TransCode", "10", "BatchNum", v.Global.sCurrentBatch, "BatchLine", v.Local.sBatchLine, "BatchDate", v.Local.sDate, "InvoiceDate", v.Local.sDate,"InvoiceAmount", v.Local.fCommTotal, "InvoiceDueDate", v.Local.sDate, "RecordAmount", v.Local.fCommTotal, "CurrExchangeCode", "USD")
+'			'add GL Account to GL LINE
+			'add GL Account to GL LINE
+			f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount2, passedTransType, "07", passedMult, 1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Local.sDate, passedAmount, v.Local.fCommTotal, passedInvDate, v.Local.sDate, passedVendor, v.Local.sVendor)
+			'add GL Account to GL LINE
+			f.Intrinsic.Control.CallSub(writeUPLGDETL_File, passedCnt, v.Local.iCnt, passedGL, v.Local.sGLAccount1, passedTransType, "07", passedMult, -1, passedBatchNumber, v.Global.sCurrentBatch, GL_LINES, "sGL_Lines", passedBatchDate, v.Local.sDate, passedAmount, v.Local.fCommTotal, passedInvDate, v.Local.sDate, passedVendor, v.Local.sVendor)
+			
+			
+			'Save Batch Numbers and Batch Invoices.
+			'FLG_COM_2B_PAID: AP Voucher.
+			f.Data.DataView.SetValue("payCommDT", "payCommDV", v.Local.iCnt,"FLG_COM_2B_PAID", v.Global.sCurrentInvoice.Trim,  "COMM_BATCH", v.Global.sCurrentBatch.Trim, "FLG_COM_PAID", v.Ambient.Date.PervasiveDate)
+			
+			
+		f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+		f.Intrinsic.Control.If(v.DataTable.UPLAPOP.RowCount, >, 0)
+			f.Intrinsic.Control.CallSub(UPLAPOPSync)
+		f.Intrinsic.Control.EndIf
+		'UPLOAD OPEN AP 
+		f.Intrinsic.String.Build("{0}\GLDETAIL.TXT", v.Caller.FilesDir, v.Local.sFilePathUpLoad)
+		f.Intrinsic.File.String2File(v.Local.sFilePathUpLoad, v.Global.sGL_Lines)
+		
+		f.Global.General.CallWrapperSync(50, "UPLGDETL/U")
+		'update batch number after used.
+		f.Intrinsic.String.Build("Insert into  GCG_5645_AP_INVBATCH (AP_BATCH) Values ('{0}')", v.Global.sCurrentBatch, v.Local.sSQL)
+		f.ODBC.Connection!con.OpenCompanyConnection
+			f.ODBC.Connection!con.Execute(v.Local.sSQL)
+		f.ODBC.Connection!con.Close
+
+		f.Data.DataTable.AcceptChanges("editCommDT")
+		f.Data.DataTable.AcceptChanges("payCommDT")
+		
+		f.ODBC.Connection!con.OpenCompanyConnection
+			f.Data.DataTable.SaveToDB("payCommDT", "con", "GCG_5645_COMMISSIONS", "Order_No*!*Line_No*!*Invoice*!*Vendor*!*IDENTIFIER", 256, "Order_No@!@Order_No*!*Line_No@!@Line_No*!*Invoice@!@Invoice*!*Vendor@!@Vendor*!*COMM_BATCH@!@COMM_BATCH*!*FLG_COM_PAID@!@FLG_COM_PAID*!*GSS_USER@!@GSS_USER*!*LAST_DATE@!@LAST_DATE*!*PL@!@PL*!*FLG_COM_2B_PAID@!@FLG_COM_2B_PAID*!*IDENTIFIER@!@IDENTIFIER")
+		f.ODBC.Connection!con.Close
+		
+		f.Data.DataView.SetFilter("editCommDT", "paidCommDV", "")
+		f.Intrinsic.Control.Else
+			f.Data.DataView.Close("commDT", "editCommDV")
+			f.Data.DataTable.Close("commDT")
+		f.Intrinsic.Control.EndIf
+		
+		f.Intrinsic.UI.CloseWaitDialog
+		f.Intrinsic.UI.Msgbox("Completed.")
+		'*Refresh
+		f.Intrinsic.Control.CallSub(cmd_Refresh_Click)
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_Pay_Click.End
+
+Program.Sub.getNextBatch.Start
+v.Local.sBatch.Declare
+v.Local.iNumBatch.Declare
+v.Local.sTemp.Declare
+f.Intrinsic.Control.Try
+
+	'Get Top Batch
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 AP_BATCH From GCG_5645_AP_INVBATCH order by AP_BATCH desc", v.Local.sBatch)
+	f.ODBC.Connection!con.Close
+	'Trim
+	f.Intrinsic.String.Trim(v.Local.sBatch, v.Local.sBatch)
+	'Check if it is empty
+	f.Intrinsic.Control.If(v.Local.sBatch, =, "")
+		'If Emptry, start with M0001
+		v.Local.sBatch.Set("O0001")
+	f.Intrinsic.Control.Else
+		'Get Next Batch.
+		f.Intrinsic.String.Right(v.Local.sBatch, 4, v.Local.sTemp)
+		v.Local.iNumBatch.Set(v.Local.sTemp)
+		f.Intrinsic.Math.Add(v.Local.iNumBatch, 1, v.Local.iNumBatch)
+		f.Intrinsic.String.LPad(v.Local.iNumBatch, "0", 4, v.Local.sTemp)
+		f.Intrinsic.String.Build("O{0}", v.Local.sTemp, v.Local.sBatch)
+	f.Intrinsic.Control.EndIf	
+	'Set batch to global variable.
+	v.Global.sCurrentBatch.Set(v.Local.sBatch)
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getNextBatch.End
+
+Program.Sub.getNextInv.Start
+v.Local.sInvoice.Declare
+v.Local.iNumInvoice.Declare
+v.Local.sTemp.Declare
+v.Local.sSQL.Declare
+f.Intrinsic.Control.Try
+	'Get Top Invoice
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.ExecuteAndReturn("Select top 1 AP_INV From GCG_5645_AP_INVBATCH order by AP_INV desc", v.Local.sInvoice)
+	f.ODBC.Connection!con.Close
+	'Trim
+	f.Intrinsic.String.Trim(v.Local.sInvoice, v.Local.sInvoice)
+	'Check if it is empty
+	f.Intrinsic.Control.If(v.Local.sInvoice, =, "")
+		'If Emptry, start with M000001
+		v.Local.sInvoice.Set("O000001")
+	f.Intrinsic.Control.Else
+		'Get Next Invoice.
+		f.Intrinsic.String.Right(v.Local.sInvoice, 6, v.Local.sTemp)
+		v.Local.iNumInvoice.Set(v.Local.sTemp)
+		f.Intrinsic.Math.Add(v.Local.iNumInvoice, 1, v.Local.iNumInvoice)
+		f.Intrinsic.String.LPad(v.Local.iNumInvoice, "0", 6, v.Local.sTemp)
+		f.Intrinsic.String.Build("O{0}", v.Local.sTemp, v.Local.sInvoice)
+	f.Intrinsic.Control.EndIf	
+	'Set Invoice to global variable.
+	v.Global.sCurrentInvoice.Set(v.Local.sInvoice)
+	'Save Invoice.
+	f.Intrinsic.String.Build("Insert into  GCG_5645_AP_INVBATCH (AP_BATCH, AP_INV) Values ('{0}', '{1}')", v.Global.sCurrentBatch, v.Global.sCurrentInvoice, v.Local.sSQL)
+	f.ODBC.Connection!con.OpenCompanyConnection
+	 	f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.ODBC.Connection!con.Close
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.getNextInv.End
+
+Program.Sub.writeUPLGDETL_File.Start
+v.Local.sLine.Declare
+v.Local.iCnt.Declare
+v.Local.sTemp.Declare
+v.Local.sBatch.Declare
+v.Local.sBatchNumber.Declare
+v.Local.sEmpty.Declare
+v.Local.sGL_Account.Declare
+v.Local.sPostDate.Declare
+v.Local.iTerms.Declare
+v.Local.dTempDate.Declare(date)
+v.Local.sCustomer.Declare
+v.Local.sFilter.Declare
+v.Local.sTransactionType.Declare
+v.Local.bDateError.Declare
+v.Local.fAmount.Declare
+'v.Local.dTempDate.Declare
+f.Intrinsic.Control.Try	
+	v.Local.sGL_Account.Set(v.Args.passedGL)
+	v.Local.sTransactionType.Set(v.Args.passedTransType)
+	
+	'GL Account
+	f.Intrinsic.String.RPad(V.Local.sGL_Account, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Post Date 
+	v.Local.sEmpty.Set(v.Args.passedBatchDate)
+	f.Intrinsic.Date.ConvertDString(v.Local.sEmpty, "MMDDYY", v.Local.dTempDate)
+	f.Intrinsic.String.Format(v.Local.dTempDate, "YYYYMMDD", v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	'Transaction Batch Number
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Args.passedBatchNumber, v.Local.sLine)
+	'Transaction Batch Number
+	v.Local.sEmpty.Set("")
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 5, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Transaction Voucher Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Reference
+	'f.Intrinsic.Control.CallSub(addField, passedLenght, 15, passedRow, v.Local.iCnt, passedField, "Invoice_Number")
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Amount
+	'f.Intrinsic.Control.CallSub(addLeftField, passedLenght, 16, passedRow, v.Local.iCnt, passedField, "Invoice_Total")
+	v.Local.fAmount.Set(v.Args.passedAmount)
+	f.Intrinsic.Math.Mult(v.Local.fAmount, v.Args.passedMult, v.Local.fAmount)
+	f.Intrinsic.String.LPad(v.Local.fAmount.String, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Description  
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 30, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Application Type
+	'f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 2, v.Local.sEmpty)
+	v.Local.sEmpty.Set("AP")
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Transaction Type
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sTransactionType, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Customer ID
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Vendor ID
+	f.Intrinsic.String.RPad(v.Args.passedVendor, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'PO Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 7, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Invoice Number
+	v.Local.sEmpty.Set(v.Global.sCurrentInvoice)
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 15, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+
+	'Invoice Date.
+	'Function.Intrinsic.Debug.Stop
+	v.Local.sEmpty.Set(v.Args.passedInvDate)
+	f.Intrinsic.Date.ConvertDString(v.Local.sEmpty, "MMDDYY", v.Local.dTempDate)
+	f.Intrinsic.String.Format(v.Local.dTempDate, "YYYYMMDD", v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	
+	'Invoice Due Date
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 8, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine,  v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check System
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 2, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Number
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 6, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Date
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 8, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Gross Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Discount Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 11, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")
+	'Check Net Amount
+	f.Intrinsic.String.RPad(v.Local.sEmpty, " ", 16, v.Local.sEmpty)
+	f.Intrinsic.String.Build("{0}{1}", v.Local.sLine, v.Local.sEmpty, v.Local.sLine)
+	v.Local.sEmpty.Set("")		
+
+
+	f.Intrinsic.Control.If(v.Global.[v.Args.GL_LINES], =, "")
+		v.Global.[v.Args.GL_LINES].Set(v.Local.sLine)
+	f.Intrinsic.Control.Else
+		f.Intrinsic.String.Build("{0}{1}{2}", v.Global.[v.Args.GL_LINES], v.Ambient.NewLine, v.Local.sLine, v.Global.[v.Args.GL_LINES])
+	f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.writeUPLGDETL_File.End
+
+Program.Sub.cmd_Refresh_Click.Start
+v.Local.sTmp.Declare
+v.Local.iCnt.Declare
+
+f.Intrinsic.Control.Try
+'Function.Intrinsic.Debug.InvokeDebugger
+'Function.Intrinsic.Debug.Stop
+	gui.Form..Enabled(False)
+	f.Intrinsic.UI.InvokeWaitDialog("Refreshing")
+	f.ODBC.Connection!con.OpenCompanyConnection
+		f.Data.DataTable.CreateFromSQL("tmpEditCommDT", "con", "Select * from GCG_5645_COMMISSIONS where FLG_COM_PAYABLE = 'Y' and ISNULL(FLG_COM_PAID, '') = '' and Vendor <> '101647' ", true)	 
+		f.Data.DataTable.CreateFromSQL("tmpViewCommDT", "con", "Select * from GCG_5645_COMMISSIONS", true)	
+		f.Data.DataTable.CreateFromSQL("tmpPayrollCommDT", "con", "Select * from GCG_5645_COMMISSIONS where Vendor = '101647' ", true)
+		
+		'Adding Cash Receiots to check commissions eligiility.
+		f.Data.Dictionary.CreateFromSQL("crAmtDict", "con", "Select Invoice, Sum(AMT_Invoice) from AR_OPEN_ITEMS where Batch_Code = '11' group by invoice union Select Invoice, Sum(AMT_Invoice) from AR_History where Batch_Code = '11' group by invoice order by invoice asc ;")
+		f.Data.Dictionary.CreateFromSQL("crDateDict", "con", "Select Invoice, MAX(Date_Transaction) from V_AR_History where Batch_Code = '11' group by invoice Union Select distinct Invoice, MAX(Date_Transaction) from V_AR_OPEN_ITEMs where Batch_Code = '11' group by invoice;")
+		'f.Data.Dictionary.CreateFromSQL("invAmt", "con", "Select Invoice,  Amt_Trans_Total from AR_Open_Items where Batch_Code = '10'")
+		f.Data.Dictionary.CreateFromSQL("custNum", "con", "Select Order_No, CUSTOMER from Order_Hist_Head")
+		f.Data.Dictionary.CreateFromSQL("custName", "con", "Select Order_No, NAME_CUSTOMER from Order_Hist_Head")
+		f.Data.Dictionary.CreateFromSQL("custPo", "con", "Select Order_No, Customer_PO from Order_Hist_Head")
+	f.ODBC.Connection!con.Close
+	
+	f.Data.DataTable.AddColumn("tmpViewCommDT", "filterDate", "Date")
+	
+	f.Intrinsic.Control.For(v.Local.iCnt, 0, v.DataTable.tmpViewCommDT.RowCount--, 1)
+		v.Local.sTmp.Set(v.DataTable.tmpViewCommDT(v.Local.iCnt).Invoice_Date!FieldValTrim)
+		f.Intrinsic.String.Split(v.Local.sTmp.Trim, " ", v.Local.sTmp)
+		f.Intrinsic.Control.If(v.Local.sTmp.Trim(0), =, "")
+			f.Data.DataTable.SetValue("tmpViewCommDT", v.Local.iCnt, "filterDate", "1900-01-01")
+		f.Intrinsic.Control.EndIf
+		f.Intrinsic.Control.If(v.Local.sTmp(0).IsDate)
+			f.Data.DataTable.SetValue("tmpViewCommDT", v.Local.iCnt, "filterDate", v.Local.sTmp(0))	
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.Next(v.Local.iCnt)
+	
+	'Refresh edit CommDT
+	f.Data.DataTable.DeleteRow("editCommDT")
+	f.Data.DataTable.AcceptChanges("editCommDT")
+	f.Data.DataTable.Merge("tmpEditCommDT", "editCommDT", false, 2)
+	f.Data.DataTable.Close("tmpEditCommDT")
+	'Refresh edit viewCommDT
+	f.Data.DataTable.DeleteRow("viewCommDT")
+	f.Data.DataTable.AcceptChanges("viewCommDT")
+	f.Data.DataTable.Merge("tmpViewCommDT", "viewCommDT", false, 2)
+	f.Data.DataTable.Close("tmpViewCommDT")
+	'Refresh edit payrollCommDT
+	f.Data.DataTable.DeleteRow("payrollCommDT")
+	f.Data.DataTable.AcceptChanges("payrollCommDT")
+	f.Data.DataTable.Merge("tmpPayrollCommDT", "payrollCommDT", false, 2)
+	f.Data.DataTable.Close("tmpPayrollCommDT")
+	
+	'Fill form dictionary info of paid invoices
+	f.Data.Dictionary.SetDefaultReturn("custNum", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "custNum", "Order_No", "Customer")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "custNum", "Order_No", "Customer")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "custNum", "Order_No", "Customer")
+	f.Data.Dictionary.Close("custNum")
+	
+	f.Data.Dictionary.SetDefaultReturn("custName", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "custName", "Order_No", "CustomerName")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "custName", "Order_No", "CustomerName")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "custName", "Order_No", "CustomerName")
+	f.Data.Dictionary.Close("custName")
+	'Fill form dictionary info of paid invoices
+	f.Data.Dictionary.SetDefaultReturn("custPo", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "custPo", "Order_No", "PoLine")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "custPo", "Order_No", "PoLine")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "custPo", "Order_No", "PoLine")
+	
+	f.Data.Dictionary.Close("custPo")
+	'Fill form dictionary info of paid invoices
+'	f.Data.Dictionary.SetDefaultReturn("invAmt", "0.0")
+'	f.Data.DataTable.FillFromDictionary("editCommDT", "invAmt", "Invoice", "Invoice_Amt")
+'	f.Data.Dictionary.Close("invAmt")
+	'Fill form dictionary info of paid invoices
+	f.Data.Dictionary.SetDefaultReturn("crAmtDict", "0.0")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "crAmtDict", "Invoice", "amtTransaction")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "crAmtDict", "Invoice", "amtTransaction")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "crAmtDict", "Invoice", "amtTransaction")
+	f.Data.Dictionary.Close("crAmtDict")
+	'Fill form dictionary info of paid invoices (Date)
+	f.Data.Dictionary.SetDefaultReturn("crDateDict", "")
+	f.Data.DataTable.FillFromDictionary("editCommDT", "crDateDict", "Invoice", "dateTransaction")
+	f.Data.DataTable.FillFromDictionary("payrollCommDT", "crDateDict", "Invoice", "dateTransaction")
+	f.Data.DataTable.FillFromDictionary("viewCommDT", "crDateDict", "Invoice", "dateTransaction")
+	f.Data.Dictionary.Close("crDateDict")
+	gui.Form..Enabled(True)
+	f.Intrinsic.UI.CloseWaitDialog
+f.Intrinsic.Control.Catch
+	gui.Form..Enabled(True)
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_Refresh_Click.End
+
+Program.Sub.cmd_Save_Click.Start
+f.Intrinsic.Control.Try
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_Save_Click.End
+
+Program.Sub.cmdFilter_Click.Start
+v.Local.sStartDate.Declare
+v.Local.sEndDate.Declare
+v.Local.sFilter.Declare
+f.Intrinsic.Control.Try
+'Try something
+	v.Local.sStartDate.Set(v.Screen.Form!dtp1.Value)
+	v.Local.sEndDate.Set(v.Screen.Form!dtp2.Value)
+	
+	f.Intrinsic.String.Build("filterDate > '{0}' and filterDate < '{1}'", v.Local.sStartDate, v.Local.sEndDate, v.Local.sFilter)
+	f.Data.DataView.SetFilter("viewCommDT", "viewCommDV", v.Local.sFilter)
+	
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdFilter_Click.End
+
+Program.Sub.cmdSelectPaid_Click.Start
+f.Intrinsic.Control.Try
+
+	f.Data.DataView.SetFilter("editCommDT", "editCommDV", "amtTransaction <> 0")
+	f.Data.DataView.SetValue("editCommDT", "editCommDV", -1, "select_to_Pay", True)
+	f.Data.DataTable.AcceptChanges("editCommDT")
+	f.Data.DataView.SetFilter("editCommDT", "editCommDV", "")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdSelectPaid_Click.End
+
+Program.Sub.chkViewPaid_Click.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.If(v.Screen.Form!chkViewPaid.Value, =, 1)
+		'View Only the ones with an AP Voucher.
+		f.Data.DataView.SetFilter("viewCommDT", "viewCommDV", "Flg_Com_2B_Paid <> ''")
+	f.Intrinsic.Control.Else
+		'View All
+		f.Data.DataView.SetFilter("viewCommDT", "viewCommDV", "")
+	f.Intrinsic.Control.EndIf
+	
+	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.chkViewPaid_Click.End
+
+Program.Sub.cmdPayrollSelectAll_Click.Start
+f.Intrinsic.Control.Try
+	f.Data.DataView.SetFilter("payrollCommDT", "payrollCommDV", "AP_BATCH = ''")
+	f.Data.DataView.SetValue("payrollCommDT", "payrollCommDV", -1, "select_to_Pay", True)
+	f.Data.DataTable.AcceptChanges("editCommDT")
+	f.Data.DataView.SetFilter("payrollCommDT", "payrollCommDV", "AP_BATCH = ''")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdPayrollSelectAll_Click.End
+
+Program.Sub.cmdPayrollPay_Click.Start
+f.Intrinsic.Control.Try
+'Try something
+	f.Data.DataView.Create("payrollCommDT", "paidPayrollDV", 22, "select_to_Pay = 'True'",)
+	f.Data.DataView.ToDataTable("payCommDT", "paidPayrollDV", "pr2BpaidDT")
+	f.Data.DataTable.SetValue("pr2BpaidDT", -1, "COM_BATCH", "PAID")
+	f.Data.DataTable.SetValue("pr2BpaidDT", -1, "GSS_USER", v.Caller.User)
+	f.Data.DataTable.SetValue("pr2BpaidDT", -1, "LAST_DATE", v.Ambient.Date.PervasiveDate)
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdPayrollPay_Click.End
+
+Program.Sub.cmd_ExportEdit_Click.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.CallSub(Export, "passedGrid", "gsgcEdit")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmd_ExportEdit_Click.End
+
+Program.Sub.cmdExportView_Click.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.CallSub(Export, "passedGrid", "gsgcView")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdExportView_Click.End
+
+Program.Sub.cmdExportPayroll_Click.Start
+f.Intrinsic.Control.Try
+	f.Intrinsic.Control.CallSub(Export, "passedGrid", "GsGcPayroll")
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdExportPayroll_Click.End
+
+Program.Sub.Export.Start
+v.Local.sSaveFilePath.Declare
+v.Local.sGrid.Declare
+f.Intrinsic.Control.Try
+	v.Local.sGrid.Set(v.Args.passedGrid)
+	f.Intrinsic.UI.ShowSaveFileDialog("", "CSV|.csv", v.Local.sSaveFilePath)
+	f.Intrinsic.Control.If(v.Local.sSaveFilePath.Trim, <>, "***CANCEL***")
+		gui.Form.[v.Local.sGrid].Export(v.Local.sSaveFilePath, "csv")
+	f.Intrinsic.Control.EndIf	
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Export.End
+
+
+Program.Sub.securityGroup.Start
+v.Local.bGroup.Declare
+f.Intrinsic.Control.Try
+	f.Global.Security.IsInGroup(v.Caller.User, "GCG5645", v.Caller.CompanyCode, v.Local.bGroup)
+	f.Intrinsic.Control.If(v.Local.bGroup)
+		gui.Form.cmdPayrollPay.Enabled(True)
+		gui.Form.cmd_Pay.Enabled(True)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.securityGroup.End
